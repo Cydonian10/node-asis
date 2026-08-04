@@ -3,8 +3,7 @@ NOMBRE: [dbo].[usp_UnitWorkAsignarUsuariosUnidad]
 FECHA: 04-08-2026
 AUTOR: Gabriel
 OBJETIVO: Asignar en lote usuarios a una unidad. Inserta en una sola sentencia los usuarios del
-          TVP que aun no estan asignados a la unidad. Si el usuario ya esta asignado (aunque sea
-          Eliminado = 1), se omite. No hay loop row-by-row.
+          TVP que aun no estan asignados a la unidad. Se puede asignar usuarios a todo Unidad
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
