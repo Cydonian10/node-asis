@@ -1,3 +1,4 @@
+
 /**
  * @swagger
  * components:
@@ -40,3 +41,5 @@ export type SyncUsuario = {
   tipo: string | null;
   migrado: boolean;
 };
+
+
