@@ -9,11 +9,11 @@ GO
 
 -- Tipos de tabla (TVP) para batch de asignaciones y creacion de areas
 IF NOT EXISTS (SELECT 1 FROM sys.types WHERE name = 'IntListTableType' AND is_table_type = 1)
-    CREATE TYPE dbo.IntListTableType AS TABLE (Value INT NOT NULL);
+    EXEC(N'CREATE TYPE dbo.IntListTableType AS TABLE (Value INT NOT NULL)');
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.types WHERE name = 'AreaBatchTableType' AND is_table_type = 1)
-    CREATE TYPE dbo.AreaBatchTableType AS TABLE (Nombre VARCHAR(200) NOT NULL, Descripcion VARCHAR(255) NULL);
+    EXEC(N'CREATE TYPE dbo.AreaBatchTableType AS TABLE (Nombre VARCHAR(200) NOT NULL, Descripcion VARCHAR(255) NULL)');
 GO
 
 CREATE TABLE SyncUnidad
@@ -26,9 +26,10 @@ CREATE TABLE SyncUnidad
 CREATE TABLE Unidad
 (
     UnidadId INT IDENTITY(1,1) PRIMARY KEY,
-    SyncUnidadId INT NOT NULL UNIQUE,
+    SyncUnidadId INT NOT NULL,
     HorasLaborales INT DEFAULT 8,
     HorasLaboralesTotales INT DEFAULT 40,
+    CONSTRAINT UQ_Unidad_SyncUnidadId UNIQUE (SyncUnidadId),
     FOREIGN KEY (SyncUnidadId) REFERENCES SyncUnidad(SyncUnidadId)
 );
 
@@ -39,7 +40,7 @@ CREATE TABLE SyncUsuarios
     Nombres VARCHAR(200),
     Apellidos VARCHAR(200),
     Tipo VARCHAR(50),
-    Dni VARCHAR(20),
+    Dni VARCHAR(20)
 );
 
 CREATE TABLE Usuario
@@ -62,8 +63,7 @@ CREATE TABLE UsuarioUnidad
     CreatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedAt DATETIME2 DEFAULT GETDATE(),
     FOREIGN KEY (UsuarioId) REFERENCES Usuario(UsuarioId),
-    FOREIGN KEY (UnidadId) REFERENCES Unidad(UnidadId),
-
+    FOREIGN KEY (UnidadId) REFERENCES Unidad(UnidadId)
 );
 
 CREATE TABLE Rol
@@ -170,7 +170,7 @@ CREATE TABLE HorarioAsignacion
     CreatedBy VARCHAR(200),
     FOREIGN KEY (UsuarioId) REFERENCES Usuario(UsuarioId),
     FOREIGN KEY (HorarioId) REFERENCES Horario(HorarioId)
-)
+);
 
 
 CREATE TABLE Dia

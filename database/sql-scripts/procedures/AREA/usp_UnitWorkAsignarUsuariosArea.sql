@@ -25,10 +25,40 @@ BEGIN
     SET NOCOUNT, XACT_ABORT ON;
 
     BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM Area WHERE AreaId = @AreaId AND Eliminado = 0)
+        -- Primero obtenemos la unidad propietaria del area. La asignacion debe respetar
+        -- la jerarquia Unidad -> Area -> Usuario.
+        DECLARE @UnidadId INT;
+        SELECT @UnidadId = UnidadId
+        FROM Area
+        WHERE AreaId = @AreaId AND Eliminado = 0;
+
+        IF @UnidadId IS NULL
         BEGIN
             SET @State = -1;
             SET @Message = 'El area no existe';
+            SET @CodeError = -1;
+            RETURN;
+        END
+
+        -- Todos los usuarios recibidos deben existir, estar activos y pertenecer
+        -- actualmente a la misma unidad del area. Si uno no cumple, se rechaza
+        -- todo el lote para evitar asignaciones inconsistentes.
+        IF EXISTS (
+            SELECT 1
+            FROM @UsuarioIds ids
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM UsuarioUnidad uu
+                INNER JOIN Usuario u ON u.UsuarioId = uu.UsuarioId
+                WHERE uu.UsuarioId = ids.Value
+                  AND uu.UnidadId = @UnidadId
+                  AND uu.Eliminado = 0
+                  AND u.Eliminado = 0
+            )
+        )
+        BEGIN
+            SET @State = -1;
+            SET @Message = 'Todos los usuarios deben pertenecer a la misma unidad del area';
             SET @CodeError = -1;
             RETURN;
         END

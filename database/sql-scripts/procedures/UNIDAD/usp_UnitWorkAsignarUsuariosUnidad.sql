@@ -33,10 +33,28 @@ BEGIN
             RETURN;
         END
 
+        -- Se permite agregar usuario que existen
+        IF EXISTS (
+            SELECT 1
+            FROM @UsuarioIds ids
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM Usuario u
+                WHERE u.UsuarioId = ids.Value
+                  AND u.Eliminado = 0
+            )
+        )
+        BEGIN
+            SET @State = -1;
+            SET @Message = 'Los usuarios deben existir';
+            SET @CodeError = -1;
+            RETURN;
+        END
+
         BEGIN TRANSACTION;
 
-        INSERT INTO UsuarioUnidad (UsuarioId, UnidadId, CreatedBy, UpdatedBy)
-        SELECT t.Value, @UnidadId, @USER, @USER
+        INSERT INTO UsuarioUnidad (UsuarioId, UnidadId)
+        SELECT t.Value, @UnidadId
         FROM @UsuarioIds t
         WHERE NOT EXISTS (
             SELECT 1 FROM UsuarioUnidad uu

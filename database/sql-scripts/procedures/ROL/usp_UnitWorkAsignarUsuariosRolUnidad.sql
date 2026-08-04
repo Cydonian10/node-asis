@@ -25,10 +25,39 @@ BEGIN
     SET NOCOUNT, XACT_ABORT ON;
 
     BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM RolUnidad WHERE RolUnidadId = @RolUnidadId AND Eliminado = 0)
+        -- Obtenemos la unidad del rol para comprobar que el usuario tenga
+        -- pertenencia activa a esa misma unidad antes de asignarle el rol.
+        DECLARE @UnidadId INT;
+        SELECT @UnidadId = UnidadId
+        FROM RolUnidad
+        WHERE RolUnidadId = @RolUnidadId AND Eliminado = 0;
+
+        IF @UnidadId IS NULL
         BEGIN
             SET @State = -1;
             SET @Message = 'El rol de la unidad no existe';
+            SET @CodeError = -1;
+            RETURN;
+        END
+
+        -- Se valida el lote completo antes de insertar. De esta manera ningún
+        -- usuario queda con un rol asociado a una unidad distinta de la suya.
+        IF EXISTS (
+            SELECT 1
+            FROM @UsuarioIds ids
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM UsuarioUnidad uu
+                INNER JOIN Usuario u ON u.UsuarioId = uu.UsuarioId
+                WHERE uu.UsuarioId = ids.Value
+                  AND uu.UnidadId = @UnidadId
+                  AND uu.Eliminado = 0
+                  AND u.Eliminado = 0
+            )
+        )
+        BEGIN
+            SET @State = -1;
+            SET @Message = 'Todos los usuarios deben pertenecer a la misma unidad del rol';
             SET @CodeError = -1;
             RETURN;
         END
