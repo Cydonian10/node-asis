@@ -1,7 +1,3 @@
-import type { z } from 'zod';
-import { ActualizarActivoSchema } from '../validations/actualizar-activo.validation.js';
-import { MigrarSyncUsuarioSchema } from '../validations/migrar-sync-usuario.validation.js';
-
 /**
  * @swagger
  * components:

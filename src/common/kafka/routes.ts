@@ -1,11 +1,18 @@
 import { z } from 'zod';
 import EnvVars from '@src/constants/EnvVars.js';
-import { AsignarUsuarioSchema } from '@src/modules/usuario/dto/usuario.dto.js';
 import {
   handleUsuarioCreado,
   handleUsuarioRemove,
   handleUsuarioUpdate,
 } from './handlers.js';
+
+// Kafka deshabilitado: el módulo Usuario ya no gestiona RolUsuario.
+// El schema del topic "creado" se deja con la forma del nuevo payload de migración.
+const UsuarioCreadoKafkaSchema = z
+  .object({
+    syncUsuarioId: z.number().int().positive().optional(),
+  })
+  .strict();
 
 const UsuarioUpdateKafkaSchema = z
   .object({
@@ -24,7 +31,7 @@ const gUsuario = EnvVars.Kafka.group_usuario;
 export const kafkaRoutes = {
   [gUsuario.id]: {
     [gUsuario.creado]: {
-      schema: AsignarUsuarioSchema,
+      schema: UsuarioCreadoKafkaSchema,
       handler: handleUsuarioCreado,
       error: gUsuario.error,
     },

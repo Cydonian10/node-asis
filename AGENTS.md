@@ -34,11 +34,23 @@ src/modules/usuario/
 ├── router.ts          # Express Router, importa paths y controller
 ├── controller.ts      # Handlers de Express (req, res)
 ├── service.ts         # Lógica de negocio
-├── repository.ts      # Interfaz de acceso a datos
+├── repository.ts      # Interfaz de acceso a datos (selectRepo)
 ├── repository.sql.ts  # Implementación SQL de la interfaz
-└── dto/
-    └── usuario.dto.ts # DTOs con Zod para validación
+├── dto/               # Tipos (respuestas + z.infer desde validations)
+│   ├── usuario.dto.ts                # Tipos de respuesta de la entidad (sin Zod)
+│   ├── sync-usuario.dto.ts           # Tipos de respuesta de sync (sin Zod)
+│   ├── actualizar-activo.dto.ts      # DTO de operación: z.infer del schema
+│   └── migrar-syncUsuario.dto.ts     # DTO de operación: z.infer del schema
+└── validations/      # Schemas Zod, un archivo por operación
+    ├── actualizar-activo.validation.ts
+    └── migrar-sync-usuario.validation.ts
 ```
+
+Reglas de `dto/` y `validations/`:
+
+- **`validations/`**: solo schemas Zod (`z.object(...).strict()`), un archivo por operación con el nombre `kebab-case.validation.ts` y su JSDoc `@swagger`.
+- **`dto/`**: solo tipos. Los tipos de respuesta (lo que devuelve un SP) van en archivos `usuario.dto.ts` / `sync-usuario.dto.ts` sin Zod. Los DTOs de entrada por operación se derivan con `z.infer` importando el schema: `export type XDto = z.infer<typeof XSchema>;`.
+- Nomenclatura: `validations/operacion.validation.ts` ↔ `dto/operacion.dto.ts`.
 
 Ejemplo mínimo de `paths.ts`:
 ```ts

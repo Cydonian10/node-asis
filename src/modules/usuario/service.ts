@@ -4,41 +4,39 @@ import {
   OperationResult,
   OperationResultCreate,
 } from '@src/common/types/operation-result.js';
-import {
-  ActualizarUsuarioDto,
-  AsignarUsuarioDto,
-  Usuario,
-} from './dto/usuario.dto.js';
+import { Usuario } from './dto/usuario.dto.js';
+import { SyncUsuario } from './dto/sync-usuario.dto.js';
+import { ActualizarActivoDto } from './dto/actualizar-activo.dto.js';
+import { MigrarSyncUsuarioDto } from './dto/migrar-syncUsuario.dto.js';
 
-const _getAll = (
-  rolId?: number,
-  unidadId?: number,
+const _getAllMigrados = (
+  activo?: boolean,
+  tipo?: string,
   busqueda?: string,
 ): Promise<Usuario[]> => {
-  return UsuarioRepo.getAll(rolId, unidadId, busqueda);
+  return UsuarioRepo.getAllMigrados(activo, tipo, busqueda);
 };
 
-const _create = (data: AsignarUsuarioDto): Promise<OperationResultCreate> => {
-  const userId = authService.getUser().id;
-  return UsuarioRepo.create(data, userId);
+const _getAllSync = (): Promise<SyncUsuario[]> => {
+  return UsuarioRepo.getAllSync();
 };
 
-const _update = (
+const _updateActivo = (
   id: number,
-  data: ActualizarUsuarioDto,
+  data: ActualizarActivoDto,
 ): Promise<OperationResult> => {
   const userId = authService.getUser().id;
-  return UsuarioRepo.update(id, data, userId);
+  return UsuarioRepo.updateActivo(id, data, userId);
 };
 
-const _remove = (id: number): Promise<OperationResult> => {
+const _migrar = (data: MigrarSyncUsuarioDto): Promise<OperationResultCreate> => {
   const userId = authService.getUser().id;
-  return UsuarioRepo.remove(id, userId);
+  return UsuarioRepo.migrar(data.syncUsuarioId, userId);
 };
 
 export const UsuarioService = {
-  getAll: _getAll,
-  create: _create,
-  update: _update,
-  remove: _remove,
+  getAllMigrados: _getAllMigrados,
+  getAllSync: _getAllSync,
+  updateActivo: _updateActivo,
+  migrar: _migrar,
 };

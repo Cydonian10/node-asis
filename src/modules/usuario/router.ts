@@ -5,6 +5,9 @@ import Controller from './controller.js';
 
 const router = Router();
 
-router.delete(UsuarioPath.Delete, Controller.remove);
+router.get(UsuarioPath.GetAll, Controller.getAllMigrados);
+router.get(UsuarioPath.GetAllSync, Controller.getAllSync);
+router.patch(UsuarioPath.UpdateActivo, Controller.updateActivo);
+router.post(UsuarioPath.Migrar, Controller.migrar);
 
 export default router;
