@@ -11,19 +11,15 @@ CREATE TABLE SyncUnidad
 (
     SyncUnidadId INT NOT NULL PRIMARY KEY,
     Codigo VARCHAR(50),
-    Nombre VARCHAR(200),
-    Activo BIT DEFAULT 1,
-    CreatedAt DATETIME2 DEFAULT GETDATE(),
-    UpdatedAt DATETIME2 DEFAULT GETDATE()
+    Nombre VARCHAR(200)
 );
 
 CREATE TABLE Unidad
 (
     UnidadId INT IDENTITY(1,1) PRIMARY KEY,
-    SyncUnidadId INT NOT NULL,
+    SyncUnidadId INT NOT NULL UNIQUE,
     HorasLaborales INT DEFAULT 8,
     HorasLaboralesTotales INT DEFAULT 40,
-    Eliminado BIT DEFAULT 0,
     FOREIGN KEY (SyncUnidadId) REFERENCES SyncUnidad(SyncUnidadId)
 );
 
@@ -67,6 +63,7 @@ CREATE TABLE Rol
     UnidadId INT NOT NULL,
     Nombre VARCHAR(100),
     Descripcion VARCHAR(255),
+    Eliminado BIT DEFAULT 0,
     CreatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedBy VARCHAR(200),
@@ -487,7 +484,8 @@ CREATE TABLE FeriadoUnidad
     FeriadoUnidadId INT IDENTITY PRIMARY KEY,
     FeriadoId INT NOT NULL,
     UnidadId INT NOT NULL,
-
+    Eliminado BIT DEFAULT 0,
+    UNIQUE(FeriadoId, UnidadId),
     FOREIGN KEY (FeriadoId) REFERENCES Feriado(FeriadoId),
     FOREIGN KEY (UnidadId) REFERENCES Unidad(UnidadId),
     CreatedBy INT NOT NULL,
