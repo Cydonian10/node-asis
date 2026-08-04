@@ -29,7 +29,9 @@ const _updateActivo = (
   return UsuarioRepo.updateActivo(id, data, userId);
 };
 
-const _migrar = (data: MigrarSyncUsuarioDto): Promise<OperationResultCreate> => {
+const _migrar = (
+  data: MigrarSyncUsuarioDto,
+): Promise<OperationResultCreate> => {
   const userId = authService.getUser().id;
   return UsuarioRepo.migrar(data.syncUsuarioId, userId);
 };

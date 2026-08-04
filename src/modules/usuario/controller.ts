@@ -7,9 +7,7 @@ import { MigrarSyncUsuarioSchema } from './validations/migrar-sync-usuario.valid
 
 const getAllMigrados = async (req: Request, res: Response) => {
   const activo =
-    req.query.activo === undefined
-      ? undefined
-      : req.query.activo === 'true';
+    req.query.activo === undefined ? undefined : req.query.activo === 'true';
   const tipo = req.query.tipo as string | undefined;
   const busqueda = req.query.busqueda as string | undefined;
 
@@ -32,9 +30,10 @@ const updateActivo = async (req: Request, res: Response) => {
 
   const parsed = ActualizarActivoSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res
-      .status(HttpStatusCodes.BAD_REQUEST)
-      .json({ message: 'Datos inválidos', errors: formatZodError(parsed.error) });
+    return res.status(HttpStatusCodes.BAD_REQUEST).json({
+      message: 'Datos inválidos',
+      errors: formatZodError(parsed.error),
+    });
   }
 
   const result = await UsuarioService.updateActivo(id, parsed.data);
@@ -44,9 +43,10 @@ const updateActivo = async (req: Request, res: Response) => {
 const migrar = async (req: Request, res: Response) => {
   const parsed = MigrarSyncUsuarioSchema.safeParse(req.body ?? {});
   if (!parsed.success) {
-    return res
-      .status(HttpStatusCodes.BAD_REQUEST)
-      .json({ message: 'Datos inválidos', errors: formatZodError(parsed.error) });
+    return res.status(HttpStatusCodes.BAD_REQUEST).json({
+      message: 'Datos inválidos',
+      errors: formatZodError(parsed.error),
+    });
   }
 
   const result = await UsuarioService.migrar(parsed.data);

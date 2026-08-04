@@ -90,10 +90,12 @@ export async function startGroupConsumer(groupId: string): Promise<void> {
 
       const parsed = route.schema.safeParse(raw);
       if (!parsed.success) {
-        const errList = parsed.error.errors.map((e: { path: (string | number)[]; message: string }) => ({
-          path: e.path,
-          message: e.message,
-        }));
+        const errList = parsed.error.errors.map(
+          (e: { path: (string | number)[]; message: string }) => ({
+            path: e.path,
+            message: e.message,
+          }),
+        );
         logger.err(
           `Validación fallida en ${topic}: ${JSON.stringify(errList)}`,
         );

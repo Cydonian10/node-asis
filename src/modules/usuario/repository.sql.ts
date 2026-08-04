@@ -9,9 +9,7 @@ import {
   OperationResult,
   OperationResultCreate,
 } from '@src/common/types/operation-result.js';
-import {
-  Usuario,
-} from './dto/usuario.dto.js';
+import { Usuario } from './dto/usuario.dto.js';
 import { SyncUsuario } from './dto/sync-usuario.dto.js';
 import { ActualizarActivoDto } from './dto/actualizar-activo.dto.js';
 
