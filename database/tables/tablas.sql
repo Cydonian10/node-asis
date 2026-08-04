@@ -33,6 +33,7 @@ CREATE TABLE SyncUsuarios
     Usuario VARCHAR(200),
     Nombres VARCHAR(200),
     Apellidos VARCHAR(200),
+    Tipo VARCHAR(50),
     Dni VARCHAR(20),
 );
 

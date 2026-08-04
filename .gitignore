@@ -21,6 +21,7 @@ docs/
 .agents/
 AGENT.md
 skills-lock.json
+specs/
 
 .vscode
 .github/

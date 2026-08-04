@@ -2,18 +2,13 @@
  * @swagger
  * components:
  *  schemas:
- *    Usuario:
+ *    SyncUsuario:
  *      type: object
- *      description: Usuario migrado (JOIN SyncUsuarios + Usuario).
+ *      description: Registro de SyncUsuarios con indicador de migración.
  *      properties:
- *        usuarioId:
- *          type: integer
- *          example: 1
- *          description: Id del usuario en la tabla Usuario.
  *        syncUsuarioId:
  *          type: integer
  *          example: 100
- *          description: Id del usuario sincronizado.
  *        usuario:
  *          type: string
  *          example: jperez
@@ -31,21 +26,17 @@
  *          type: string
  *          nullable: true
  *          example: DC
- *        activo:
+ *        migrado:
  *          type: boolean
- *          example: true
- *          description: Estado activo/inactivo del usuario.
+ *          example: false
+ *          description: Indica si el sync ya tiene una fila en Usuario.
  */
-export type Usuario = {
-  usuarioId: number;
+export type SyncUsuario = {
   syncUsuarioId: number;
   usuario: string;
   nombres: string;
   apellidos: string;
   dni: string | null;
   tipo: string | null;
-  activo: boolean;
+  migrado: boolean;
 };
-
-
-
