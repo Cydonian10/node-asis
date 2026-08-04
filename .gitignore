@@ -17,5 +17,10 @@ dist/
 !/src/storage/reporte/grupal/.gitkeep
 !/src/storage/reporte/reglamento/.gitkeep
 
+docs/
+.agents/
+AGENT.md
+skills-lock.json
+
 .vscode
 .github/
