@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    /* Visit https://aka.ms/tsconfig.json to read more about this file */
+    "target": "ES2022", /* Usar una versión moderna de ES */
+    "module": "Node16", /* Generar código de módulos ES */
+    "moduleResolution": "node16", /* Usar la estrategia de resolución de módulos de Node.js */
+    "rootDir": "src",
+    "outDir": "dist",
+    "strict": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "paths": {
+      "@src/*": [
+        "./src/*"
+      ]
+    },
+    "typeRoots": [
+      "src/common/types",
+      "src/routes/types",
+      "node_modules/@types"
+    ],
+    "types": [],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "useUnknownInCatchVariables": false,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "spec/**/*.ts",
+    "src/common/types/**/*.d.ts"
+  ],
+  "exclude": [
+    "src/public/",
+    "dist",
+    "docs",
+    "**/*.example.ts",
+    "spec"
+  ]
+}

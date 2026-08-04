@@ -1,0 +1,1502 @@
+{
+  "info": {
+    "name": "API Inventario",
+    "_postman_id": "d2f1a7e6-1234-5678-90ab-cdef12345678",
+    "description": "Colección para probar las rutas de la API de Inventario.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Almacen",
+      "item": [
+        {
+          "name": "Get All Almacen",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/almacen/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "almacen", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Almacen by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/almacen/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "almacen", "by", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Almacen",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"almacen\": {\n    \"nombre\": \"Nuevo Almacen\",\n    \"ubicacion\": \"Ubicación Ejemplo\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/almacen/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "almacen", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Almacen",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"almacen\": {\n    \"id_almacen\": 1,\n    \"nombre\": \"Almacen Actualizado\",\n    \"ubicacion\": \"Ubicación Actualizada\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/almacen/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "almacen", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Almacen",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/almacen/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "almacen", "delete", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Articulo",
+      "item": [
+        {
+          "name": "Get All Articulo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/articulo/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "articulo", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Articulo by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/articulo/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "articulo", "by", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Articulo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"articulo\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/articulo/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "articulo", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Articulo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"articulo\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/articulo/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "articulo", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Articulo",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/articulo/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "articulo", "delete", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Atributo",
+      "item": [
+        {
+          "name": "Get All Atributo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/atributo/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "atributo", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Atributo by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/atributo/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "atributo", "by", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Atributo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"atributo\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/atributo/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "atributo", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Atributo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"atributo\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/atributo/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "atributo", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Atributo",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/atributo/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "atributo", "delete", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categoria",
+      "item": [
+        {
+          "name": "Get All Categoria",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/categoria/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "categoria", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Categoria by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/categoria/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "categoria", "by", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Categoria",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoria\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/categoria/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "categoria", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Categoria",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoria\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/categoria/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "categoria", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Categoria",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/categoria/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "categoria", "delete", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "DetallePedidoProveedor",
+      "item": [
+        {
+          "name": "Get All DetallePedidoProveedor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/detallePedidoProveedor/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "detallePedidoProveedor", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get DetallePedidoProveedor by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/detallePedidoProveedor/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api_inventario",
+                "v1",
+                "detallePedidoProveedor",
+                "by",
+                ":id"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add DetallePedidoProveedor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"detallePedidoProveedor\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/detallePedidoProveedor/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "detallePedidoProveedor", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update DetallePedidoProveedor",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"detallePedidoProveedor\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/detallePedidoProveedor/update",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api_inventario",
+                "v1",
+                "detallePedidoProveedor",
+                "update"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete DetallePedidoProveedor",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/detallePedidoProveedor/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api_inventario",
+                "v1",
+                "detallePedidoProveedor",
+                "delete",
+                ":id"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "DetalleVenta",
+      "item": [
+        {
+          "name": "Get All DetalleVenta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/detalleVenta/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "detalleVenta", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get DetalleVenta by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/detalleVenta/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "detalleVenta", "by", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add DetalleVenta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"detalleVenta\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/detalleVenta/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "detalleVenta", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update DetalleVenta",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"detalleVenta\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/detalleVenta/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "detalleVenta", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete DetalleVenta",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/detalleVenta/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "detalleVenta", "delete", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "EstadoPedido",
+      "item": [
+        {
+          "name": "Get All EstadoPedido",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/estadoPedido/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "estadoPedido", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get EstadoPedido by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/estadoPedido/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "estadoPedido", "by", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add EstadoPedido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estadoPedido\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/estadoPedido/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "estadoPedido", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update EstadoPedido",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estadoPedido\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/estadoPedido/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "estadoPedido", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete EstadoPedido",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/estadoPedido/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "estadoPedido", "delete", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Inventario",
+      "item": [
+        {
+          "name": "Get All Inventario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/inventario/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "inventario", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Inventario by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/inventario/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "inventario", "by", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Inventario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"inventario\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/inventario/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "inventario", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Inventario",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"inventario\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/inventario/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "inventario", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Inventario",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/inventario/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "inventario", "delete", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "PedidoProveedor",
+      "item": [
+        {
+          "name": "Get All PedidoProveedor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/pedidoProveedor/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "pedidoProveedor", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get PedidoProveedor by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/pedidoProveedor/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "pedidoProveedor", "by", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add PedidoProveedor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pedidoProveedor\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/pedidoProveedor/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "pedidoProveedor", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update PedidoProveedor",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pedidoProveedor\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/pedidoProveedor/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "pedidoProveedor", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete PedidoProveedor",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/pedidoProveedor/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api_inventario",
+                "v1",
+                "pedidoProveedor",
+                "delete",
+                ":id"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "PrecioArticulo",
+      "item": [
+        {
+          "name": "Get All PrecioArticulo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/precioArticulo/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "precioArticulo", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get PrecioArticulo by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/precioArticulo/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "precioArticulo", "by", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add PrecioArticulo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"precioArticulo\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/precioArticulo/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "precioArticulo", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update PrecioArticulo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"precioArticulo\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/precioArticulo/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "precioArticulo", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete PrecioArticulo",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/precioArticulo/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api_inventario",
+                "v1",
+                "precioArticulo",
+                "delete",
+                ":id"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Proveedor",
+      "item": [
+        {
+          "name": "Get All Proveedor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/proveedor/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "proveedor", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Proveedor by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/proveedor/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "proveedor", "by", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Proveedor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedor\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/proveedor/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "proveedor", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Proveedor",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedor\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/proveedor/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "proveedor", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Proveedor",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/proveedor/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "proveedor", "delete", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "TipoPedido",
+      "item": [
+        {
+          "name": "Get All TipoPedido",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/tipoPedido/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "tipoPedido", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get TipoPedido by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/tipoPedido/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "tipoPedido", "by", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add TipoPedido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoPedido\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/tipoPedido/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "tipoPedido", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update TipoPedido",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoPedido\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/tipoPedido/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "tipoPedido", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete TipoPedido",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/tipoPedido/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "tipoPedido", "delete", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "VarianteArticulo",
+      "item": [
+        {
+          "name": "Get All VarianteArticulo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/varianteArticulo/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "varianteArticulo", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get VarianteArticulo by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/varianteArticulo/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "varianteArticulo", "by", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add VarianteArticulo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"varianteArticulo\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/varianteArticulo/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "varianteArticulo", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update VarianteArticulo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"varianteArticulo\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/varianteArticulo/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "varianteArticulo", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete VarianteArticulo",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/varianteArticulo/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api_inventario",
+                "v1",
+                "varianteArticulo",
+                "delete",
+                ":id"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "VarianteAtributo",
+      "item": [
+        {
+          "name": "Get All VarianteAtributo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/varianteAtributo/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "varianteAtributo", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get VarianteAtributo by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/varianteAtributo/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "varianteAtributo", "by", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add VarianteAtributo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"varianteAtributo\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/varianteAtributo/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "varianteAtributo", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update VarianteAtributo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"varianteAtributo\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/varianteAtributo/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "varianteAtributo", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete VarianteAtributo",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/varianteAtributo/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api_inventario",
+                "v1",
+                "varianteAtributo",
+                "delete",
+                ":id"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Venta",
+      "item": [
+        {
+          "name": "Get All Venta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/venta/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "venta", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Venta by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/venta/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "venta", "by", ":id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Venta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"venta\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/venta/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "venta", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Venta",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"venta\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/venta/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "venta", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Venta",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/venta/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "venta", "delete", ":id"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "MovimientoInventario",
+      "item": [
+        {
+          "name": "Get All MovimientoInventario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/movimientoInventario/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "movimientoInventario", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get MovimientoInventario by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/movimientoInventario/by/:id",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api_inventario",
+                "v1",
+                "movimientoInventario",
+                "by",
+                ":id"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add MovimientoInventario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"movimientoInventario\": {\n    \"campo\": \"valor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/movimientoInventario/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "movimientoInventario", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update MovimientoInventario",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"movimientoInventario\": {\n    \"campo\": \"valor actualizado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/movimientoInventario/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "movimientoInventario", "update"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete MovimientoInventario",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/movimientoInventario/delete/:id",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api_inventario",
+                "v1",
+                "movimientoInventario",
+                "delete",
+                ":id"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Debug",
+      "item": [
+        {
+          "name": "Get Debug Routes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api_inventario/v1/debug/routes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api_inventario", "v1", "debug", "routes"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get API Docs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api-docs.json",
+              "host": ["{{baseUrl}}"],
+              "path": ["api-docs.json"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

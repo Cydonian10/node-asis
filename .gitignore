@@ -1,0 +1,21 @@
+**/node_modules
+dist/
+**/**/*.log
+
+# CONFIG
+/config/emailAccounts.json
+
+# STORAGE IGNORE
+/src/storage/evaluacion/*
+/src/storage/ficha/*
+/src/storage/reporte/grupal/*
+/src/storage/reporte/reglamento/*
+
+# KEEP THE FOLDER
+!/src/storage/evaluacion/.gitkeep
+!/src/storage/ficha/.gitkeep
+!/src/storage/reporte/grupal/.gitkeep
+!/src/storage/reporte/reglamento/.gitkeep
+
+.vscode
+.github/
