@@ -2,7 +2,7 @@
  * TEMPLATE ONLY - not compiled. Copy to {name}.ts when implementing.
  */
 import mysql from 'mysql2/promise';
-import EnvVars from '@src/constants/EnvVars';
+import EnvVars from '../constants/EnvVars';
 
 const dbConfig = {
   host: EnvVars.Database.Server,

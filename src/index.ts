@@ -1,4 +1,4 @@
-import './pre-start';
+import './pre-start.js';
 import logger from '@src/common/logger.js';
 
 import EnvVars from '@src/constants/EnvVars.js';
