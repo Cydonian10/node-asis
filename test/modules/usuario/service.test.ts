@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
-jest.mock('../repository.js', () => ({
+jest.mock('@src/modules/usuario/repository.js', () => ({
   __esModule: true,
   default: {
     getAll: jest.fn(),
@@ -18,8 +18,8 @@ jest.mock('@src/common/auth.service.js', () => ({
   },
 }));
 
-import { UsuarioService } from '../service.js';
-import UsuarioRepo from '../repository.js';
+import { UsuarioService } from '@src/modules/usuario/service.js';
+import UsuarioRepo from '@src/modules/usuario/repository.js';
 
 const mockedRepo = UsuarioRepo as jest.Mocked<typeof UsuarioRepo>;
 

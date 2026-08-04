@@ -4,7 +4,6 @@
     "target": "ES2022", /* Usar una versión moderna de ES */
     "module": "Node16", /* Generar código de módulos ES */
     "moduleResolution": "node16", /* Usar la estrategia de resolución de módulos de Node.js */
-    "rootDir": "src",
     "outDir": "dist",
     "strict": true,
     "strictNullChecks": true,

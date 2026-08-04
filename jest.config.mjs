@@ -22,7 +22,7 @@ const config = {
   projects: [
     {
       displayName: 'unit',
-      testMatch: ['<rootDir>/src/**/*.test.ts'],
+      testMatch: ['<rootDir>/src/**/*.test.ts', '<rootDir>/test/modules/**/*.test.ts'],
       transform: {
         '^.+\\.ts$': ['ts-jest', tsJestUnit],
       },

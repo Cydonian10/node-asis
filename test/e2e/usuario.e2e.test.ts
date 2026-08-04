@@ -12,7 +12,7 @@ jest.unstable_mockModule('@src/modules/usuario/repository.js', () => ({
   default: mockRepo,
 }));
 
-let agent: ReturnType<typeof import('supertest').default>;
+let agent: ReturnType<typeof import('supertest')>;
 
 beforeAll(async () => {
   const { default: supertest } = await import('supertest');

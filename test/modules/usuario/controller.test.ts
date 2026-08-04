@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import type { Request, Response } from 'express';
 
-jest.mock('../service.js', () => ({
+jest.mock('@src/modules/usuario/service.js', () => ({
   UsuarioService: {
     getAll: jest.fn(),
     create: jest.fn(),
@@ -10,8 +10,8 @@ jest.mock('../service.js', () => ({
   },
 }));
 
-import Controller from '../controller.js';
-import { UsuarioService } from '../service.js';
+import Controller from '@src/modules/usuario/controller.js';
+import { UsuarioService } from '@src/modules/usuario/service.js';
 
 const mockedService = UsuarioService as jest.Mocked<typeof UsuarioService>;
 
