@@ -10,5 +10,8 @@ router.get(UnidadPath.GetAllSync, Controller.getAllSync);
 router.patch(UnidadPath.Update, Controller.update);
 router.delete(UnidadPath.Delete, Controller.remove);
 router.post(UnidadPath.Migrar, Controller.migrar);
+router.post(UnidadPath.AsignarUsuarios, Controller.asignarUsuarios);
+router.post(UnidadPath.CrearAreas, Controller.crearAreas);
+router.get(UnidadPath.GetUsuarios, Controller.getUsuarios);
 
 export default router;

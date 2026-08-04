@@ -4,6 +4,8 @@ import { UnidadService } from './service.js';
 import { formatZodError } from '@src/util/zod-util.js';
 import { ActualizarUnidadSchema } from './validations/actualizar-unidad.validation.js';
 import { MigrarSyncUnidadSchema } from './validations/migrar-sync-unidad.validation.js';
+import { AsignarUsuariosSchema } from './validations/asignar-usuarios.validation.js';
+import { CrearAreasBatchSchema } from './validations/crear-areas-batch.validation.js';
 
 const getAll = async (req: Request, res: Response) => {
   const busqueda = req.query.busqueda as string | undefined;
@@ -62,10 +64,65 @@ const migrar = async (req: Request, res: Response) => {
   return res.status(HttpStatusCodes.OK).json(result);
 };
 
+const asignarUsuarios = async (req: Request, res: Response) => {
+  const id = +req.params.id;
+  if (!id) {
+    return res
+      .status(HttpStatusCodes.BAD_REQUEST)
+      .json({ message: 'El id debe ser un número válido' });
+  }
+
+  const parsed = AsignarUsuariosSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(HttpStatusCodes.BAD_REQUEST).json({
+      message: 'Datos inválidos',
+      errors: formatZodError(parsed.error),
+    });
+  }
+
+  const result = await UnidadService.asignarUsuarios(id, parsed.data);
+  return res.status(HttpStatusCodes.OK).json(result);
+};
+
+const crearAreas = async (req: Request, res: Response) => {
+  const id = +req.params.id;
+  if (!id) {
+    return res
+      .status(HttpStatusCodes.BAD_REQUEST)
+      .json({ message: 'El id debe ser un número válido' });
+  }
+
+  const parsed = CrearAreasBatchSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(HttpStatusCodes.BAD_REQUEST).json({
+      message: 'Datos inválidos',
+      errors: formatZodError(parsed.error),
+    });
+  }
+
+  const result = await UnidadService.crearAreas(id, parsed.data);
+  return res.status(HttpStatusCodes.CREATED).json(result);
+};
+
+const getUsuarios = async (req: Request, res: Response) => {
+  const id = +req.params.id;
+  if (!id) {
+    return res
+      .status(HttpStatusCodes.BAD_REQUEST)
+      .json({ message: 'El id debe ser un número válido' });
+  }
+
+  const items = await UnidadService.getUsuarios(id);
+  return res.status(HttpStatusCodes.OK).json(items);
+};
+
 export default {
   getAll,
   getAllSync,
   update,
   remove,
   migrar,
+  asignarUsuarios,
+  crearAreas,
+  getUsuarios,
 };

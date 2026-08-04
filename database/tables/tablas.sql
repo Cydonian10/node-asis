@@ -7,6 +7,15 @@ use API_SCAP_DB
 
 GO
 
+-- Tipos de tabla (TVP) para batch de asignaciones y creacion de areas
+IF NOT EXISTS (SELECT 1 FROM sys.types WHERE name = 'IntListTableType' AND is_table_type = 1)
+    CREATE TYPE dbo.IntListTableType AS TABLE (Value INT NOT NULL);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.types WHERE name = 'AreaBatchTableType' AND is_table_type = 1)
+    CREATE TYPE dbo.AreaBatchTableType AS TABLE (Nombre VARCHAR(200) NOT NULL, Descripcion VARCHAR(255) NULL);
+GO
+
 CREATE TABLE SyncUnidad
 (
     SyncUnidadId INT NOT NULL PRIMARY KEY,
@@ -60,14 +69,27 @@ CREATE TABLE UsuarioUnidad
 CREATE TABLE Rol
 (
     RolId INT IDENTITY(1,1) PRIMARY KEY,
-    UnidadId INT NOT NULL,
     Nombre VARCHAR(100),
     Descripcion VARCHAR(255),
     Eliminado BIT DEFAULT 0,
     CreatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedBy VARCHAR(200),
+    CreatedBy VARCHAR(200)
+);
+
+CREATE TABLE RolUnidad
+(
+    RolUnidadId INT IDENTITY(1,1) PRIMARY KEY,
+    RolId INT NOT NULL,
+    UnidadId INT NOT NULL,
+    Eliminado BIT DEFAULT 0,
+    CreatedAt DATETIME2 DEFAULT GETDATE(),
+    UpdatedAt DATETIME2 DEFAULT GETDATE(),
     CreatedBy VARCHAR(200),
+    UpdatedBy VARCHAR(200),
+    UNIQUE (RolId, UnidadId),
+    FOREIGN KEY (RolId) REFERENCES Rol(RolId),
     FOREIGN KEY (UnidadId) REFERENCES Unidad(UnidadId)
 );
 
@@ -75,19 +97,20 @@ CREATE TABLE UsuarioRol
 (
     UsuarioRolId INT IDENTITY(1,1) PRIMARY KEY,
     UsuarioId INT NOT NULL,
-    RolId INT NOT NULL,
+    RolUnidadId INT NOT NULL,
     Eliminado BIT DEFAULT 0,
     CreatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedBy VARCHAR(200),
     CreatedBy VARCHAR(200),
     FOREIGN KEY (UsuarioId) REFERENCES Usuario(UsuarioId),
-    FOREIGN KEY (RolId) REFERENCES Rol(RolId)
+    FOREIGN KEY (RolUnidadId) REFERENCES RolUnidad(RolUnidadId)
 );
 
 CREATE TABLE Area
 (
     AreaId INT IDENTITY(1,1) PRIMARY KEY,
+    UnidadId INT NOT NULL,
     Nombre VARCHAR(200),
     Descripcion VARCHAR(255),
     Eliminado BIT DEFAULT 0,
@@ -95,6 +118,7 @@ CREATE TABLE Area
     UpdatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedBy VARCHAR(200),
     CreatedBy VARCHAR(200),
+    FOREIGN KEY (UnidadId) REFERENCES Unidad(UnidadId)
 );
 
 
@@ -115,6 +139,21 @@ CREATE TABLE Horario
     UpdatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedBy VARCHAR(200),
     CreatedBy VARCHAR(200)
+);
+
+CREATE TABLE UsuarioArea 
+(
+    UsuarioAreaId INT IDENTITY(1,1) PRIMARY KEY,
+    UsuarioId INT NOT NULL,
+    AreaId INT NOT NULL,
+    Eliminado BIT DEFAULT 0,
+    CreatedAt DATETIME2 DEFAULT GETDATE(),
+    UpdatedAt DATETIME2 DEFAULT GETDATE(),
+    CreatedBy VARCHAR(200),
+    UpdatedBy VARCHAR(200),
+    UNIQUE (UsuarioId, AreaId),
+    FOREIGN KEY (UsuarioId) REFERENCES Usuario(UsuarioId),
+    FOREIGN KEY (AreaId) REFERENCES Area(AreaId)
 );
 
 CREATE TABLE HorarioAsignacion

@@ -40,13 +40,6 @@ BEGIN
             RETURN;
         END
 
-        IF EXISTS (SELECT 1 FROM Rol WHERE UnidadId = @ID)
-        BEGIN
-            SET @State = -1;
-            SET @Message = 'No se puede eliminar la unidad porque tiene roles asociados (Rol)';
-            SET @CodeError = -1;
-            RETURN;
-        END
 
         IF EXISTS (SELECT 1 FROM Horario WHERE UnidadId = @ID)
         BEGIN

@@ -8,6 +8,9 @@ import { Unidad } from './dto/unidad.dto.js';
 import { SyncUnidad } from './dto/sync-unidad.dto.js';
 import { ActualizarUnidadDto } from './dto/actualizar-unidad.dto.js';
 import { MigrarSyncUnidadDto } from './dto/migrar-sync-unidad.dto.js';
+import { UsuarioUnidad } from './dto/usuario-unidad.dto.js';
+import { AsignarUsuariosDto } from './dto/asignar-usuarios.dto.js';
+import { CrearAreasBatchItem } from './dto/crear-areas-batch.dto.js';
 
 const _getAllMigradas = (busqueda?: string): Promise<Unidad[]> => {
   return UnidadRepo.getAllMigradas(busqueda);
@@ -35,10 +38,33 @@ const _migrar = (data: MigrarSyncUnidadDto): Promise<OperationResultCreate> => {
   return UnidadRepo.migrar(data.syncUnidadId, userId);
 };
 
+const _getUsuarios = (unidadId: number): Promise<UsuarioUnidad[]> => {
+  return UnidadRepo.getUsuarios(unidadId);
+};
+
+const _asignarUsuarios = (
+  unidadId: number,
+  data: AsignarUsuariosDto,
+): Promise<OperationResult> => {
+  const userId = authService.getUser().id;
+  return UnidadRepo.asignarUsuarios(unidadId, data.usuarioIds, userId);
+};
+
+const _crearAreas = (
+  unidadId: number,
+  data: CrearAreasBatchItem[],
+): Promise<OperationResult> => {
+  const userId = authService.getUser().id;
+  return UnidadRepo.crearAreas(unidadId, data, userId);
+};
+
 export const UnidadService = {
   getAllMigradas: _getAllMigradas,
   getAllSync: _getAllSync,
   updateHoras: _updateHoras,
   remove: _remove,
   migrar: _migrar,
+  getUsuarios: _getUsuarios,
+  asignarUsuarios: _asignarUsuarios,
+  crearAreas: _crearAreas,
 };
