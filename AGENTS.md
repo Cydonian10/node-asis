@@ -8,8 +8,9 @@ npm run build        # Build de producción (tsx build.ts → tsc)
 npm run lint         # ESLint sobre src/
 npm run lint:fix     # ESLint --fix
 npm run format       # Prettier --write src/
-npm run test         # Tests con nodemon (Jasmine)
-npm run test:no-reloading  # Tests sin reload
+npm run test         # Tests unitarios con Jest
+npm run test:e2e     # Tests E2E con Jest
+npm run test:all     # Todos los tests
 ```
 
 Orden de verificación: `npm run build` (incluye tsc y lint implícito).
@@ -22,6 +23,43 @@ Orden de verificación: `npm run build` (incluye tsc y lint implícito).
 - **Registro automático de rutas**: `src/routes/register.ts` escanea `src/modules/*/` y monta cada módulo que tenga `paths.ts` (export default con `Base: string`) y `router.ts` (export default Router).
 - **Patrón de módulo**: `controller.ts` → `service.ts` → `repository.ts` → `repository.sql.ts`.
 - **Selector de repo**: `selectRepo<T>()` en `src/util/repoSelector.ts` elige implementación según `DB_TYPE` del env.
+
+## Estructura de un módulo
+
+Cada módulo en `src/modules/<nombre>/` sigue esta estructura:
+
+```
+src/modules/usuario/
+├── paths.ts           # Rutas + JSDoc @swagger. Export default { Base: '/ruta' }
+├── router.ts          # Express Router, importa paths y controller
+├── controller.ts      # Handlers de Express (req, res)
+├── service.ts         # Lógica de negocio
+├── repository.ts      # Interfaz de acceso a datos
+├── repository.sql.ts  # Implementación SQL de la interfaz
+└── dto/
+    └── usuario.dto.ts # DTOs con Zod para validación
+```
+
+Ejemplo mínimo de `paths.ts`:
+```ts
+const ModuloPath = {
+  Base: '/modulos',
+  // @swagger ... documentación OpenAPI
+  Delete: '/:id',
+};
+export default ModuloPath;
+```
+
+Ejemplo mínimo de `router.ts`:
+```ts
+import { Router } from 'express';
+import ModuloPath from './paths.js';
+import Controller from './controller.js';
+
+const router = Router();
+router.delete(ModuloPath.Delete, Controller.remove);
+export default router;
+```
 
 ## Convenciones
 
@@ -40,3 +78,4 @@ Orden de verificación: `npm run build` (incluye tsc y lint implícito).
 - El build (`build.ts`) copia carpetas `templates/` de `src/common/` y `src/modules/*/templates/` a `dist/` antes de compilar.
 - Docker expone puerto 3001 y usa `env/development.env`.
 - Auth middleware solo activo en producción o cuando `SECURITY=on` en desarrollo.
+- Tests usan Jest con `--experimental-vm-modules` (ESM). Config en `jest.config.js`.
