@@ -7,7 +7,7 @@ import pluginPrettier from 'eslint-plugin-prettier';
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'node_modules', 'coverage', 'spec/**/fixtures/**', '**/*.example.ts','eslint.config.js'],
+    ignores: ['dist', 'node_modules', 'coverage', 'test/**', '**/__tests__/**', '**/*.example.ts','eslint.config.js'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,

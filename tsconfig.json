@@ -29,14 +29,13 @@
   },
   "include": [
     "src/**/*.ts",
-    "spec/**/*.ts",
+    "test/**/*.ts",
     "src/common/types/**/*.d.ts"
   ],
   "exclude": [
     "src/public/",
     "dist",
     "docs",
-    "**/*.example.ts",
-    "spec"
+    "**/*.example.ts"
   ]
 }
