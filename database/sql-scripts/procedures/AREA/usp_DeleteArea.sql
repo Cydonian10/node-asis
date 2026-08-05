@@ -1,10 +1,10 @@
 /*======================================================================================================
 NOMBRE: [dbo].[usp_DeleteArea]
-FECHA: 04-08-2026
+FECHA: 05-08-2026
 AUTOR: Gabriel
-OBJETIVO: Soft-delete (Eliminado = 1) de un area. Valida restricciones antes: no debe haber filas
-          no eliminadas en UsuarioArea que referencien AreaId, ni filas en Horario que referencien
-          AreaId (Horario no tiene flag Eliminado, cuentan todas). Si hay alguna, responde error.
+OBJETIVO: Soft-delete (Eliminado = 1) de un area. Valida restricciones antes: no debe haber Usuarios
+          no eliminados que referencien AreaId, ni filas en Horario que referencien AreaId (Horario
+          no tiene flag Eliminado, cuentan todas). Si hay alguna, responde error (SPEC 04).
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
@@ -32,10 +32,10 @@ BEGIN
             RETURN;
         END
 
-        IF EXISTS (SELECT 1 FROM UsuarioArea WHERE AreaId = @ID AND Eliminado = 0)
+        IF EXISTS (SELECT 1 FROM Usuario WHERE AreaId = @ID AND Eliminado = 0)
         BEGIN
             SET @State = -1;
-            SET @Message = 'No se puede eliminar el area porque tiene usuarios asignados (UsuarioArea)';
+            SET @Message = 'No se puede eliminar el area porque tiene usuarios asignados (Usuario)';
             SET @CodeError = -1;
             RETURN;
         END

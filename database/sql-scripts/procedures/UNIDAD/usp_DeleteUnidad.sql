@@ -1,10 +1,10 @@
 /*======================================================================================================
 NOMBRE: [dbo].[usp_DeleteUnidad]
-FECHA: 04-08-2026
+FECHA: 05-08-2026
 AUTOR: Gabriel
-OBJETIVO: Eliminacion fisica de una unidad. Valida restricciones: no debe existir ninguna fila
-          (eliminada o no) en UsuarioUnidad, Rol, Horario, ControlUnidad ni FeriadoUnidad que
-          referencie UnidadId, porque las FK bloquearian el DELETE. Si hay restricciones, error.
+OBJETIVO: Eliminacion fisica de una unidad. Valida restricciones: no debe existir ninguna fila en
+          Usuario (via Area.UnidadId), Horario, ControlUnidad ni FeriadoUnidad que referencie la
+          unidad. Si hay restricciones, error (SPEC 04).
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
@@ -32,14 +32,19 @@ BEGIN
             RETURN;
         END
 
-        IF EXISTS (SELECT 1 FROM UsuarioUnidad WHERE UnidadId = @ID)
+        IF EXISTS (
+            SELECT 1
+            FROM Usuario U
+            INNER JOIN Area A ON A.AreaId = U.AreaId
+            WHERE A.UnidadId = @ID
+              AND U.Eliminado = 0
+        )
         BEGIN
             SET @State = -1;
-            SET @Message = 'No se puede eliminar la unidad porque tiene usuarios asignados (UsuarioUnidad)';
+            SET @Message = 'No se puede eliminar la unidad porque tiene usuarios asignados (Usuario via Area)';
             SET @CodeError = -1;
             RETURN;
         END
-
 
         IF EXISTS (SELECT 1 FROM Horario WHERE UnidadId = @ID)
         BEGIN

@@ -128,37 +128,6 @@ const getUsuarios = async (unidadId: number): Promise<UsuarioUnidad[]> => {
   }
 };
 
-const asignarUsuarios = async (
-  unidadId: number,
-  usuarioIds: number[],
-  userId: number,
-): Promise<OperationResult> => {
-  try {
-    const pool = await connectToDb();
-    const request = pool.request();
-
-    request.input('UnidadId', sql.Int, unidadId);
-
-    const tvp = new sql.Table('IntListTableType');
-    tvp.columns.add('Value', sql.Int);
-    for (const id of usuarioIds) {
-      tvp.rows.add(id);
-    }
-    request.input('UsuarioIds', sql.TVP, tvp);
-
-    request.input('USER', sql.Int, userId);
-
-    request.output('State', sql.Int);
-    request.output('Message', sql.VarChar(255));
-    request.output('CodeError', sql.Int);
-
-    const result = await request.execute('usp_UnitWorkAsignarUsuariosUnidad');
-    return handleOperationResult(result.output as OperationResult);
-  } catch (error) {
-    return ErrorUtil.add(error as string);
-  }
-};
-
 const crearAreas = async (
   unidadId: number,
   areas: CrearAreasBatchItem[],
@@ -198,6 +167,5 @@ export default {
   remove,
   migrar,
   getUsuarios,
-  asignarUsuarios,
   crearAreas,
 };

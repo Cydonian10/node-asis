@@ -106,7 +106,7 @@ const AreaPath = {
    *     tags:
    *       - Areas
    *     summary: Elimina un area
-   *     description: Soft-delete del area si no hay restricciones (UsuarioArea no eliminados u Horario). Error si las hay.
+   *     description: Soft-delete del area si no hay restricciones (usuarios del area u Horario). Error si las hay.
    *     parameters:
    *       - in: path
    *         name: id
@@ -134,8 +134,8 @@ const AreaPath = {
    *   post:
    *     tags:
    *       - Areas
-   *     summary: Asigna usuarios a un area
-   *     description: Asigna en lote usuarios al area respetando el UNIQUE (no duplica asignaciones).
+   *     summary: Asigna sync-usuarios a un area
+   *     description: Asigna en lote sync-usuarios al area. Crea el Usuario si no existe y asigna AreaId.
    *     parameters:
    *       - in: path
    *         name: id
@@ -169,8 +169,8 @@ const AreaPath = {
    *   get:
    *     tags:
    *       - Areas
-   *     summary: Lista usuarios asignados al area
-   *     description: Lista los usuarios asignados al area con sus datos de SyncUsuarios.
+   *     summary: Lista usuarios del area
+   *     description: Lista los usuarios del area con sus datos de SyncUsuarios y esSupervisor.
    *     parameters:
    *       - in: path
    *         name: id
@@ -180,7 +180,7 @@ const AreaPath = {
    *           type: integer
    *     responses:
    *       200:
-   *         description: Lista de usuarios asignados al area.
+   *         description: Lista de usuarios del area.
    *         content:
    *           application/json:
    *             schema:

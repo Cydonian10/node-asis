@@ -94,7 +94,7 @@ const UnidadPath = {
    *     tags:
    *       - Unidades
    *     summary: Elimina una unidad
-   *     description: Elimina fisicamente la unidad si no hay restricciones (referencias en UsuarioUnidad, Rol, Horario, ControlUnidad o FeriadoUnidad).
+   *     description: Elimina fisicamente la unidad si no hay restricciones (usuarios cuya area pertenezca a la unidad, Horario, ControlUnidad o FeriadoUnidad).
    *     parameters:
    *       - in: path
    *         name: id
@@ -146,41 +146,6 @@ const UnidadPath = {
 
   /**
    * @swagger
-   * /unidades/{id}/usuarios-batch:
-   *   post:
-   *     tags:
-   *       - Unidades
-   *     summary: Asigna usuarios a una unidad
-   *     description: Asigna en lote usuarios a la unidad respetando el UNIQUE (no duplica asignaciones).
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         description: Id de la unidad (UnidadId).
-   *         schema:
-   *           type: integer
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             $ref: '#/components/schemas/AsignarUsuariosDto'
-   *     responses:
-   *       200:
-   *         description: Usuarios asignados correctamente.
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/OperationResult'
-   *       400:
-   *         description: Datos inválidos.
-   *       500:
-   *         description: Error interno del servidor.
-   */
-  AsignarUsuarios: '/:id/usuarios-batch',
-
-  /**
-   * @swagger
    * /unidades/{id}/areas-batch:
    *   post:
    *     tags:
@@ -223,8 +188,8 @@ const UnidadPath = {
    *   get:
    *     tags:
    *       - Unidades
-   *     summary: Lista usuarios asignados a la unidad
-   *     description: Lista los usuarios asignados a la unidad con sus datos de SyncUsuarios.
+   *     summary: Lista usuarios de la unidad
+   *     description: Lista los usuarios de la unidad derivando por area (Area.UnidadId), con esSupervisor.
    *     parameters:
    *       - in: path
    *         name: id
@@ -234,7 +199,7 @@ const UnidadPath = {
    *           type: integer
    *     responses:
    *       200:
-   *         description: Lista de usuarios asignados a la unidad.
+   *         description: Lista de usuarios de la unidad.
    *         content:
    *           application/json:
    *             schema:

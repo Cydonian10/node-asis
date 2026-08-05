@@ -1,17 +1,21 @@
 /*======================================================================================================
-NOMBRE: [dbo].[usp_UpdateUsuarioActivo]
-FECHA: 04-08-2026
+NOMBRE: [dbo].[usp_UpdateUsuario]
+FECHA: 05-08-2026
 AUTOR: Gabriel
-OBJETIVO: Activar o desactivar un usuario (columna Active).
+OBJETIVO: Actualizar activo, area y/o flag esSupervisor de un usuario. Actualiza solo las columnas
+          enviadas (ISNULL sobre la columna actual). Si se envia @AreaId, valida que el area exista
+          y no este eliminada. Reemplaza a usp_UpdateUsuarioActivo (SPEC 04).
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
  -     -            -            -
 ======================================================================================================*/
-CREATE OR ALTER PROCEDURE [dbo].[usp_UpdateUsuarioActivo]
+CREATE OR ALTER PROCEDURE [dbo].[usp_UpdateUsuario]
     -- Parametros de entrada
     @ID INT,
-    @Activo BIT,
+    @Activo BIT = NULL,
+    @AreaId INT = NULL,
+    @EsSupervisor BIT = NULL,
     @USER INT,
 
     -- Salidas
@@ -31,8 +35,19 @@ BEGIN
             RETURN;
         END
 
+        IF @AreaId IS NOT NULL
+           AND NOT EXISTS (SELECT 1 FROM Area WHERE AreaId = @AreaId AND Eliminado = 0)
+        BEGIN
+            SET @State = -1;
+            SET @Message = 'El area no existe';
+            SET @CodeError = -1;
+            RETURN;
+        END
+
         UPDATE Usuario
-        SET Active = @Activo,
+        SET Active = ISNULL(@Activo, Active),
+            AreaId = ISNULL(@AreaId, AreaId),
+            EsSupervisor = ISNULL(@EsSupervisor, EsSupervisor),
             UpdatedAt = GETDATE()
         WHERE UsuarioId = @ID;
 

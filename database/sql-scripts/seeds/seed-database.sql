@@ -2,8 +2,8 @@ USE API_SCAP_DB;
 GO
 
 /*
-  Seed compatible con database/tables/tablas.sql.
-  Orden: datos sincronizados -> migracion -> catalogo -> relaciones.
+  Seed compatible con database/tables/tablas.sql (SPEC 04: usuario con area y esSupervisor, sin roles).
+  Orden: datos sincronizados -> unidades -> areas -> usuarios asignados a area.
   Puede ejecutarse despues de clear-database.sql y de crear las tablas.
 */
 
@@ -46,39 +46,6 @@ WHERE NOT EXISTS (
 );
 GO
 
-INSERT INTO Usuario (SyncUsuarioId, Active, Eliminado)
-SELECT S.SyncUsuarioId, 1, 0
-FROM SyncUsuarios S
-WHERE NOT EXISTS (
-    SELECT 1 FROM Usuario U WHERE U.SyncUsuarioId = S.SyncUsuarioId
-);
-GO
-
-INSERT INTO Rol (Nombre, Descripcion)
-SELECT V.Nombre, V.Descripcion
-FROM (VALUES
-    ('Supervisor', 'Rol de supervision'),
-    ('Asistente', 'Rol de asistente'),
-    ('Usuario', 'Rol base de usuario')
-) V(Nombre, Descripcion)
-WHERE NOT EXISTS (
-    SELECT 1 FROM Rol R WHERE R.Nombre = V.Nombre
-);
-GO
-
-INSERT INTO RolUnidad (RolId, UnidadId, CreatedBy, UpdatedBy)
-SELECT R.RolId, U.UnidadId, 'seed', 'seed'
-FROM Rol R
-CROSS JOIN Unidad U
-WHERE R.Nombre IN ('Supervisor', 'Asistente', 'Usuario')
-  AND NOT EXISTS (
-      SELECT 1
-      FROM RolUnidad RU
-      WHERE RU.RolId = R.RolId
-        AND RU.UnidadId = U.UnidadId
-  );
-GO
-
 INSERT INTO Area (UnidadId, Nombre, Descripcion, CreatedBy, UpdatedBy)
 SELECT U.UnidadId, V.Nombre, V.Descripcion, 'seed', 'seed'
 FROM Unidad U
@@ -94,50 +61,23 @@ WHERE NOT EXISTS (
 );
 GO
 
-INSERT INTO UsuarioUnidad (UsuarioId, UnidadId)
-SELECT U.UsuarioId, UN.UnidadId
-FROM Usuario U
-INNER JOIN Unidad UN ON UN.SyncUnidadId = ((U.UsuarioId - 1) % 3) + 1
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM UsuarioUnidad UU
-    WHERE UU.UsuarioId = U.UsuarioId
-      AND UU.UnidadId = UN.UnidadId
-);
-GO
-
-INSERT INTO UsuarioArea (UsuarioId, AreaId)
-SELECT U.UsuarioId, A.AreaId
-FROM Usuario U
-INNER JOIN Unidad UN ON UN.SyncUnidadId = ((U.UsuarioId - 1) % 3) + 1
+-- Los usuarios se crean asignados a un area (AreaId obligatorio). EsSupervisor en 0 por defecto;
+-- los primeros de cada unidad quedan como supervisores para el ejemplo.
+INSERT INTO Usuario (SyncUsuarioId, Active, AreaId, EsSupervisor, Eliminado)
+SELECT S.SyncUsuarioId, 1, A.AreaId,
+       CASE WHEN S.SyncUsuarioId IN (1001, 1002, 1003) THEN 1 ELSE 0 END,
+       0
+FROM SyncUsuarios S
+INNER JOIN Unidad UN ON UN.SyncUnidadId = ((S.SyncUsuarioId - 1) % 3) + 1
 INNER JOIN Area A ON A.UnidadId = UN.UnidadId AND A.Nombre = 'Administracion'
 WHERE NOT EXISTS (
-    SELECT 1
-    FROM UsuarioArea UA
-    WHERE UA.UsuarioId = U.UsuarioId
-      AND UA.AreaId = A.AreaId
-);
-GO
-
-INSERT INTO UsuarioRol (UsuarioId, RolUnidadId)
-SELECT U.UsuarioId, RU.RolUnidadId
-FROM Usuario U
-INNER JOIN Unidad UN ON UN.SyncUnidadId = ((U.UsuarioId - 1) % 3) + 1
-INNER JOIN Rol R ON R.Nombre = 'Usuario'
-INNER JOIN RolUnidad RU ON RU.RolId = R.RolId AND RU.UnidadId = UN.UnidadId
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM UsuarioRol UR
-    WHERE UR.UsuarioId = U.UsuarioId
-      AND UR.RolUnidadId = RU.RolUnidadId
+    SELECT 1 FROM Usuario U WHERE U.SyncUsuarioId = S.SyncUsuarioId
 );
 GO
 
 SELECT * FROM SyncUnidad;
 SELECT * FROM SyncUsuarios;
 SELECT * FROM Unidad;
-SELECT * FROM Usuario;
-SELECT * FROM Rol;
-SELECT * FROM RolUnidad;
 SELECT * FROM Area;
+SELECT * FROM Usuario;
 GO

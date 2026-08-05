@@ -4,20 +4,24 @@
  *  schemas:
  *    UsuarioUnidad:
  *      type: object
- *      description: Usuario asignado a una unidad (JOIN Usuario + SyncUsuarios).
+ *      description: Usuario de una unidad (derivado por area, JOIN Usuario + Area + SyncUsuarios).
  *      properties:
- *        usuarioUnidadId:
- *          type: integer
- *          example: 1
- *          description: Id de la asignacion (UsuarioUnidad.UsuarioUnidadId).
  *        usuarioId:
  *          type: integer
  *          example: 5
  *          description: Id del usuario (Usuario.UsuarioId).
- *        unidadId:
+ *        syncUsuarioId:
+ *          type: integer
+ *          example: 100
+ *          description: Id del usuario sincronizado (SyncUsuarios.SyncUsuarioId).
+ *        areaId:
  *          type: integer
  *          example: 1
- *          description: Id de la unidad (UsuarioUnidad.UnidadId).
+ *          description: Id del area del usuario (Usuario.AreaId).
+ *        esSupervisor:
+ *          type: boolean
+ *          example: false
+ *          description: Indica si el usuario es supervisor.
  *        usuario:
  *          type: string
  *          example: jperez
@@ -32,9 +36,10 @@
  *          description: Apellidos del usuario (SyncUsuarios.Apellidos).
  */
 export type UsuarioUnidad = {
-  usuarioUnidadId: number;
   usuarioId: number;
-  unidadId: number;
+  syncUsuarioId: number;
+  areaId: number;
+  esSupervisor: boolean;
   usuario: string;
   nombres: string;
   apellidos: string;

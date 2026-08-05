@@ -117,7 +117,7 @@ const getUsuarios = async (areaId: number): Promise<UsuarioArea[]> => {
 
 const asignarUsuarios = async (
   areaId: number,
-  usuarioIds: number[],
+  syncUsuarioIds: number[],
   userId: number,
 ): Promise<OperationResult> => {
   try {
@@ -128,10 +128,10 @@ const asignarUsuarios = async (
 
     const tvp = new sql.Table('IntListTableType');
     tvp.columns.add('Value', sql.Int);
-    for (const id of usuarioIds) {
+    for (const id of syncUsuarioIds) {
       tvp.rows.add(id);
     }
-    request.input('UsuarioIds', sql.TVP, tvp);
+    request.input('SyncUsuarioIds', sql.TVP, tvp);
 
     request.input('USER', sql.Int, userId);
 

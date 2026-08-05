@@ -4,7 +4,7 @@
  *  schemas:
  *    Usuario:
  *      type: object
- *      description: Usuario migrado (JOIN SyncUsuarios + Usuario).
+ *      description: Usuario migrado (JOIN SyncUsuarios + Usuario + Area).
  *      properties:
  *        usuarioId:
  *          type: integer
@@ -35,6 +35,23 @@
  *          type: boolean
  *          example: true
  *          description: Estado activo/inactivo del usuario.
+ *        areaId:
+ *          type: integer
+ *          example: 5
+ *          description: Area del usuario (AreaId).
+ *        areaNombre:
+ *          type: string
+ *          nullable: true
+ *          example: Ingenieria
+ *          description: Nombre del area (Area.Nombre).
+ *        unidadId:
+ *          type: integer
+ *          example: 2
+ *          description: Unidad derivada del area (Area.UnidadId).
+ *        esSupervisor:
+ *          type: boolean
+ *          example: false
+ *          description: Indica si el usuario es supervisor.
  */
 export type Usuario = {
   usuarioId: number;
@@ -45,4 +62,8 @@ export type Usuario = {
   dni: string | null;
   tipo: string | null;
   activo: boolean;
+  areaId: number;
+  areaNombre: string | null;
+  unidadId: number;
+  esSupervisor: boolean;
 };

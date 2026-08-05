@@ -1,44 +1,33 @@
 import UsuarioRepo from './repository.js';
 import { authService } from '@src/common/auth.service.js';
-import {
-  OperationResult,
-  OperationResultCreate,
-} from '@src/common/types/operation-result.js';
+import { OperationResult } from '@src/common/types/operation-result.js';
 import { Usuario } from './dto/usuario.dto.js';
 import { SyncUsuario } from './dto/sync-usuario.dto.js';
-import { ActualizarActivoDto } from './dto/actualizar-activo.dto.js';
-import { MigrarSyncUsuarioDto } from './dto/migrar-syncUsuario.dto.js';
+import { ActualizarUsuarioDto } from './dto/actualizar-usuario.dto.js';
 
 const _getAllMigrados = (
   activo?: boolean,
   tipo?: string,
   busqueda?: string,
+  areaId?: number,
 ): Promise<Usuario[]> => {
-  return UsuarioRepo.getAllMigrados(activo, tipo, busqueda);
+  return UsuarioRepo.getAllMigrados(activo, tipo, busqueda, areaId);
 };
 
 const _getAllSync = (): Promise<SyncUsuario[]> => {
   return UsuarioRepo.getAllSync();
 };
 
-const _updateActivo = (
+const _update = (
   id: number,
-  data: ActualizarActivoDto,
+  data: ActualizarUsuarioDto,
 ): Promise<OperationResult> => {
   const userId = authService.getUser().id;
-  return UsuarioRepo.updateActivo(id, data, userId);
-};
-
-const _migrar = (
-  data: MigrarSyncUsuarioDto,
-): Promise<OperationResultCreate> => {
-  const userId = authService.getUser().id;
-  return UsuarioRepo.migrar(data.syncUsuarioId, userId);
+  return UsuarioRepo.update(id, data, userId);
 };
 
 export const UsuarioService = {
   getAllMigrados: _getAllMigrados,
   getAllSync: _getAllSync,
-  updateActivo: _updateActivo,
-  migrar: _migrar,
+  update: _update,
 };

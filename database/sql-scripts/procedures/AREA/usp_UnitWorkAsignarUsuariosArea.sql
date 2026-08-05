@@ -1,10 +1,12 @@
 /*======================================================================================================
 NOMBRE: [dbo].[usp_UnitWorkAsignarUsuariosArea]
-FECHA: 04-08-2026
+FECHA: 05-08-2026
 AUTOR: Gabriel
-OBJETIVO: Asignar en lote usuarios a un area. Inserta en una sola sentencia los usuarios del TVP
-          que aun no estan asignados al area (respeta el UNIQUE de UsuarioArea). Si el usuario ya
-          esta asignado (aunque sea Eliminado = 1), se omite. No hay loop row-by-row.
+OBJETIVO: Asignar en lote sync-usuarios a un area. Para cada SyncUsuarioId del TVP:
+          - si ya existe Usuario con ese SyncUsuarioId, actualiza su AreaId;
+          - si no existe, crea el Usuario (Active = 1, EsSupervisor = 0, Eliminado = 0).
+          Es la unica via de crear usuarios (SPEC 04): la migracion sync->usuario dejo de ser un paso
+          separado. No hay loop row-by-row; cada sentencia es set-based dentro de transaccion.
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
@@ -13,7 +15,7 @@ NRO  FECHA       USUARIO    MODIFICACION
 CREATE OR ALTER PROCEDURE [dbo].[usp_UnitWorkAsignarUsuariosArea]
     -- Parametros de entrada
     @AreaId INT,
-    @UsuarioIds dbo.IntListTableType READONLY,
+    @SyncUsuarioIds dbo.IntListTableType READONLY,
     @USER INT,
 
     -- Salidas
@@ -25,14 +27,7 @@ BEGIN
     SET NOCOUNT, XACT_ABORT ON;
 
     BEGIN TRY
-        -- Primero obtenemos la unidad propietaria del area. La asignacion debe respetar
-        -- la jerarquia Unidad -> Area -> Usuario.
-        DECLARE @UnidadId INT;
-        SELECT @UnidadId = UnidadId
-        FROM Area
-        WHERE AreaId = @AreaId AND Eliminado = 0;
-
-        IF @UnidadId IS NULL
+        IF NOT EXISTS (SELECT 1 FROM Area WHERE AreaId = @AreaId AND Eliminado = 0)
         BEGIN
             SET @State = -1;
             SET @Message = 'El area no existe';
@@ -40,38 +35,37 @@ BEGIN
             RETURN;
         END
 
-        -- Todos los usuarios recibidos deben existir, estar activos y pertenecer
-        -- actualmente a la misma unidad del area. Si uno no cumple, se rechaza
-        -- todo el lote para evitar asignaciones inconsistentes.
         IF EXISTS (
             SELECT 1
-            FROM @UsuarioIds ids
+            FROM @SyncUsuarioIds ids
             WHERE NOT EXISTS (
-                SELECT 1
-                FROM UsuarioUnidad uu
-                INNER JOIN Usuario u ON u.UsuarioId = uu.UsuarioId
-                WHERE uu.UsuarioId = ids.Value
-                  AND uu.UnidadId = @UnidadId
-                  AND uu.Eliminado = 0
-                  AND u.Eliminado = 0
+                SELECT 1 FROM SyncUsuarios SU
+                WHERE SU.SyncUsuarioId = ids.Value
             )
         )
         BEGIN
             SET @State = -1;
-            SET @Message = 'Todos los usuarios deben pertenecer a la misma unidad del area';
+            SET @Message = 'Los usuarios sincronizados deben existir';
             SET @CodeError = -1;
             RETURN;
         END
 
         BEGIN TRANSACTION;
 
-        INSERT INTO UsuarioArea (UsuarioId, AreaId, CreatedBy, UpdatedBy)
-        SELECT t.Value, @AreaId, @USER, @USER
-        FROM @UsuarioIds t
+        INSERT INTO Usuario (SyncUsuarioId, Active, AreaId, EsSupervisor, Eliminado)
+        SELECT ids.Value, 1, @AreaId, 0, 0
+        FROM @SyncUsuarioIds ids
         WHERE NOT EXISTS (
-            SELECT 1 FROM UsuarioArea ua
-            WHERE ua.UsuarioId = t.Value AND ua.AreaId = @AreaId
+            SELECT 1 FROM Usuario U
+            WHERE U.SyncUsuarioId = ids.Value
         );
+
+        UPDATE U
+        SET U.AreaId = @AreaId,
+            U.UpdatedAt = GETDATE()
+        FROM Usuario U
+        INNER JOIN @SyncUsuarioIds ids ON ids.Value = U.SyncUsuarioId
+        WHERE U.Eliminado = 0;
 
         COMMIT TRANSACTION;
 

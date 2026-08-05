@@ -7,30 +7,30 @@ import { z } from 'zod';
  *    AsignarUsuariosDto:
  *      type: object
  *      required:
- *        - usuarioIds
+ *        - syncUsuarioIds
  *      properties:
- *        usuarioIds:
+ *        syncUsuarioIds:
  *          type: array
- *          description: Lista de ids de usuarios a asignar. Minimo 1 y sin duplicados.
+ *          description: Lista de ids de SyncUsuarios a asignar. Minimo 1 y sin duplicados. Crea el Usuario si no existe.
  *          items:
  *            type: integer
- *            example: 5
+ *            example: 100
  */
 export const AsignarUsuariosSchema = z
   .object({
-    usuarioIds: z
+    syncUsuarioIds: z
       .array(
         z
-          .number({ message: 'usuarioIds debe contener solo números' })
+          .number({ message: 'syncUsuarioIds debe contener solo números' })
           .int()
           .positive({
-            message: 'usuarioIds debe contener números mayores a 0',
+            message: 'syncUsuarioIds debe contener números mayores a 0',
           }),
-        { message: 'usuarioIds es requerido' },
+        { message: 'syncUsuarioIds es requerido' },
       )
-      .min(1, { message: 'usuarioIds no puede estar vacío' })
+      .min(1, { message: 'syncUsuarioIds no puede estar vacío' })
       .refine((ids) => new Set(ids).size === ids.length, {
-        message: 'usuarioIds no puede contener duplicados',
+        message: 'syncUsuarioIds no puede contener duplicados',
       }),
   })
   .strict();

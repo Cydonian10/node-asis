@@ -49,43 +49,12 @@ CREATE TABLE Usuario
     SyncUsuarioId INT NOT NULL UNIQUE,
     Active BIT DEFAULT 1,
     AreaId INT NOT NULL,
-    UnidadId INT NOT NULL,
-    RolId INT NOT NULL,
+    EsSupervisor BIT DEFAULT 0,
     Eliminado BIT DEFAULT 0,
     CreatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedAt DATETIME2 DEFAULT GETDATE(),
     FOREIGN KEY (SyncUsuarioId) REFERENCES SyncUsuarios(SyncUsuarioId),
-    FOREIGN KEY (AreaId) REFERENCES Area(AreaId),
-    FOREIGN KEY (UnidadId) REFERENCES Unidad(UnidadId),
-    FOREIGN KEY (RolId) REFERENCES Rol(RolId)
-);
-
-
-CREATE TABLE Rol
-(
-    RolId INT IDENTITY(1,1) PRIMARY KEY,
-    Nombre VARCHAR(100),
-    Descripcion VARCHAR(255),
-    Eliminado BIT DEFAULT 0,
-    CreatedAt DATETIME2 DEFAULT GETDATE(),
-    UpdatedAt DATETIME2 DEFAULT GETDATE(),
-    UpdatedBy VARCHAR(200),
-    CreatedBy VARCHAR(200)
-);
-
-CREATE TABLE RolUnidad
-(
-    RolUnidadId INT IDENTITY(1,1) PRIMARY KEY,
-    RolId INT NOT NULL,
-    UnidadId INT NOT NULL,
-    Eliminado BIT DEFAULT 0,
-    CreatedAt DATETIME2 DEFAULT GETDATE(),
-    UpdatedAt DATETIME2 DEFAULT GETDATE(),
-    CreatedBy VARCHAR(200),
-    UpdatedBy VARCHAR(200),
-    UNIQUE (RolId, UnidadId),
-    FOREIGN KEY (RolId) REFERENCES Rol(RolId),
-    FOREIGN KEY (UnidadId) REFERENCES Unidad(UnidadId)
+    FOREIGN KEY (AreaId) REFERENCES Area(AreaId)
 );
 
 

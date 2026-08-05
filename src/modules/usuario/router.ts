@@ -7,7 +7,6 @@ const router = Router();
 
 router.get(UsuarioPath.GetAll, Controller.getAllMigrados);
 router.get(UsuarioPath.GetAllSync, Controller.getAllSync);
-router.patch(UsuarioPath.UpdateActivo, Controller.updateActivo);
-router.post(UsuarioPath.Migrar, Controller.migrar);
+router.patch(UsuarioPath.Update, Controller.update);
 
 export default router;

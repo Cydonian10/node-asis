@@ -1,9 +1,9 @@
 /*======================================================================================================
 NOMBRE: [dbo].[usp_GetAreaUsuarios]
-FECHA: 04-08-2026
+FECHA: 05-08-2026
 AUTOR: Gabriel
-OBJETIVO: Listar los usuarios asignados a un area (UsuarioArea JOIN Usuario + SyncUsuarios).
-          Excluye las asignaciones y usuarios con Eliminado = 1.
+OBJETIVO: Listar los usuarios de un area (Usuario JOIN SyncUsuarios) con esSupervisor.
+          Excluye usuarios con Eliminado = 1 (SPEC 04).
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
@@ -17,17 +17,16 @@ BEGIN
     SET NOCOUNT ON;
 
     SELECT
-        UA.UsuarioAreaId AS usuarioAreaId,
-        UA.UsuarioId AS usuarioId,
-        UA.AreaId AS areaId,
+        U.UsuarioId AS usuarioId,
+        SU.SyncUsuarioId AS syncUsuarioId,
+        U.AreaId AS areaId,
+        U.EsSupervisor AS esSupervisor,
         SU.Usuario AS usuario,
         SU.Nombres AS nombres,
         SU.Apellidos AS apellidos
-    FROM UsuarioArea UA
-    INNER JOIN Usuario U ON U.UsuarioId = UA.UsuarioId
+    FROM Usuario U
     INNER JOIN SyncUsuarios SU ON SU.SyncUsuarioId = U.SyncUsuarioId
-    WHERE UA.AreaId = @AreaId
-        AND UA.Eliminado = 0
+    WHERE U.AreaId = @AreaId
         AND U.Eliminado = 0;
 END
 GO

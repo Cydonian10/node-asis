@@ -8,7 +8,7 @@ const UsuarioPath = {
    *     tags:
    *       - Usuarios
    *     summary: Lista usuarios migrados
-   *     description: Lista los usuarios migrados (JOIN SyncUsuarios + Usuario) con filtros opcionales.
+   *     description: Lista los usuarios migrados (JOIN SyncUsuarios + Usuario + Area) con filtros opcionales.
    *     parameters:
    *       - in: query
    *         name: activo
@@ -28,6 +28,12 @@ const UsuarioPath = {
    *         description: Buscar por usuario, nombres, apellidos o dni.
    *         schema:
    *           type: string
+   *       - in: query
+   *         name: areaId
+   *         required: false
+   *         description: Filtrar por area (AreaId).
+   *         schema:
+   *           type: integer
    *     responses:
    *       200:
    *         description: Lista de usuarios migrados.
@@ -66,12 +72,12 @@ const UsuarioPath = {
 
   /**
    * @swagger
-   * /usuarios/{id}/activo:
+   * /usuarios/{id}:
    *   patch:
    *     tags:
    *       - Usuarios
-   *     summary: Activa o desactiva un usuario
-   *     description: Actualiza la columna Active de un usuario.
+   *     summary: Actualiza un usuario
+   *     description: Actualiza activo, area y/o esSupervisor de un usuario. Al menos uno es requerido.
    *     parameters:
    *       - in: path
    *         name: id
@@ -84,7 +90,7 @@ const UsuarioPath = {
    *       content:
    *         application/json:
    *           schema:
-   *             $ref: '#/components/schemas/ActualizarActivoDto'
+   *             $ref: '#/components/schemas/ActualizarUsuarioDto'
    *     responses:
    *       200:
    *         description: Usuario actualizado correctamente.
@@ -97,35 +103,7 @@ const UsuarioPath = {
    *       500:
    *         description: Error interno del servidor.
    */
-  UpdateActivo: '/:id/activo',
-
-  /**
-   * @swagger
-   * /usuarios/migrar:
-   *   post:
-   *     tags:
-   *       - Usuarios
-   *     summary: Migra sync-usuarios a usuarios
-   *     description: Migra un sync-usuario específico o todos los faltantes si no se envía syncUsuarioId.
-   *     requestBody:
-   *       required: false
-   *       content:
-   *         application/json:
-   *           schema:
-   *             $ref: '#/components/schemas/MigrarSyncUsuarioDto'
-   *     responses:
-   *       200:
-   *         description: Migración ejecutada correctamente.
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/OperationResultCreate'
-   *       400:
-   *         description: Datos inválidos.
-   *       500:
-   *         description: Error interno del servidor.
-   */
-  Migrar: '/migrar',
+  Update: '/:id',
 };
 
 export default UsuarioPath;
