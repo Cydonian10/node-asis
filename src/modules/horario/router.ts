@@ -23,10 +23,7 @@ router.post(
   HorarioPath.CreateTurnoDiaConectado,
   Controller.createTurnoDiaConectado,
 );
-router.get(
-  HorarioPath.GetTurnoDiaConectado,
-  Controller.getTurnoDiaConectado,
-);
+router.get(HorarioPath.GetTurnoDiaConectado, Controller.getTurnoDiaConectado);
 router.delete(
   HorarioPath.DeleteTurnoDiaConectado,
   Controller.removeTurnoDiaConectado,

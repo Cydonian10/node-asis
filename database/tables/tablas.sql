@@ -368,19 +368,21 @@ CREATE TABLE Asistencia
 (
     AsistenciaId INT IDENTITY(1,1) PRIMARY KEY,
     UsuarioId INT,
-    Fecha DATE,
-    EstadoAsistenciaId INT,
+    Fecha DATE, -- día de ENTRADA
+    EstadoAsistenciaEntradaId INT NULL, -- FK -> EstadoAsistencia
+    EstadoAsistenciaSalidaId INT NULL, -- FK -> EstadoAsistencia
+    ResultadoAsistencia VARCHAR(50), -- computado: estado entrada (+ estado salida si difieren)
     ControlId INT,
     HoraEntrada DATETIME2, --
-    HoraSalida DATETIME2, --
-    vigenciaInicio DATE, --
-    vigenciaFin DATE, --
-    TipoAsistencia VARCHAR(50), -- 'Extendido' y 'Regular'
-    turnoEntrada TIME, --
-    turnoId INT, --
-    turnoSalida TIME, --
+    HoraSalida DATETIME2, -- puede caer el día siguiente (turno extendido)
+    vigenciaInicio DATE, -- snapshot de Vigencia.FechaInicio (NULL si no rotativo)
+    vigenciaFin DATE, -- snapshot de Vigencia.FechaFin
+    turnoEntrada TIME, -- snapshot
+    turnoId INT, -- snapshot
+    turnoSalida TIME, -- snapshot
     FOREIGN KEY (UsuarioId) REFERENCES Usuario(UsuarioId),
-    FOREIGN KEY (EstadoAsistenciaId) REFERENCES EstadoAsistencia(EstadoAsistenciaId),
+    FOREIGN KEY (EstadoAsistenciaEntradaId) REFERENCES EstadoAsistencia(EstadoAsistenciaId),
+    FOREIGN KEY (EstadoAsistenciaSalidaId) REFERENCES EstadoAsistencia(EstadoAsistenciaId),
     FOREIGN KEY (ControlId) REFERENCES [Control](ControlId),
     CreatedBy INT NOT NULL,
     UpdatedBy INT NULL,
@@ -513,5 +515,24 @@ BEGIN
         ('Viernes', 'Vie', 5),
         ('Sabado', 'Sab', 6),
         ('Domingo', 'Dom', 7);
+END
+GO
+
+-- Seed del catalogo EstadoAsistencia (11 valores). Idempotente.
+IF NOT EXISTS (SELECT 1 FROM EstadoAsistencia)
+BEGIN
+    INSERT INTO EstadoAsistencia (Nombre, CreatedBy, UpdatedBy)
+    VALUES
+        ('Asistio', 0, 0),
+        ('Falta', 0, 0),
+        ('Tarde', 0, 0),
+        ('SalidaAnticipada', 0, 0),
+        ('SinMarcacionEntrada', 0, 0),
+        ('SinMarcacionSalida', 0, 0),
+        ('Justificado', 0, 0),
+        ('Vacaciones', 0, 0),
+        ('VigenciaVencida', 0, 0),
+        ('Permiso', 0, 0),
+        ('Licencia', 0, 0);
 END
 GO

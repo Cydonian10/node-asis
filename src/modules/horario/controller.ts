@@ -243,9 +243,7 @@ const removeTurnoDiaConectado = async (req: Request, res: Response) => {
       .json({ message: 'El id debe ser un número válido' });
   }
 
-  const result = await HorarioService.removeTurnoDiaConectado(
-    salidaTurnoDiaId,
-  );
+  const result = await HorarioService.removeTurnoDiaConectado(salidaTurnoDiaId);
   return res.status(HttpStatusCodes.OK).json(result);
 };
 
