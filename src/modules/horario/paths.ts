@@ -447,6 +447,41 @@ const HorarioPath = {
 
   /**
    * @swagger
+   * /horarios/turnos/{turnoId}/dia-conectado/{salidaTurnoDiaId}:
+   *   delete:
+   *     tags:
+   *       - Horarios
+   *     summary: Elimina el dia conectado de un turno
+   *     description: Soft-delete de la conexion (SalidaTurnoDia) entre un turno y su dia de salida.
+   *     parameters:
+   *       - in: path
+   *         name: turnoId
+   *         required: true
+   *         description: Id del turno (TurnoId).
+   *         schema:
+   *           type: integer
+   *       - in: path
+   *         name: salidaTurnoDiaId
+   *         required: true
+   *         description: Id de la conexion (SalidaTurnoDiaId).
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Dia conectado eliminado correctamente.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/OperationResult'
+   *       400:
+   *         description: Datos inválidos.
+   *       500:
+   *         description: Error interno del servidor.
+   */
+  DeleteTurnoDiaConectado: '/turnos/:turnoId/dia-conectado/:salidaTurnoDiaId',
+
+  /**
+   * @swagger
    * /horarios/{id}/dias/{diaId}/vigencias:
    *   post:
    *     tags:

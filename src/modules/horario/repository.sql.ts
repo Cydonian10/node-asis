@@ -469,6 +469,28 @@ const createTurnoDiaConectado = async (
   }
 };
 
+const removeTurnoDiaConectado = async (
+  id: number,
+  userId: number,
+): Promise<OperationResult> => {
+  try {
+    const pool = await connectToDb();
+    const request = pool.request();
+
+    request.input('ID', sql.Int, id);
+    request.input('USER', sql.Int, userId);
+
+    request.output('State', sql.Int);
+    request.output('Message', sql.VarChar(255));
+    request.output('CodeError', sql.Int);
+
+    const result = await request.execute('usp_DeleteTurnoDiaConectado');
+    return handleOperationResult(result.output as OperationResult);
+  } catch (error) {
+    return ErrorUtil.delete(error as string);
+  }
+};
+
 const createVigencia = async (
   horarioDiaId: number,
   data: CrearVigenciaDto,
@@ -624,6 +646,7 @@ export default {
   removeTurno,
   getTurnoDiaConectado,
   createTurnoDiaConectado,
+  removeTurnoDiaConectado,
   createVigencia,
   updateVigencia,
   removeVigencia,

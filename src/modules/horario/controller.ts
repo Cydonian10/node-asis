@@ -235,6 +235,20 @@ const createTurnoDiaConectado = async (req: Request, res: Response) => {
   return res.status(HttpStatusCodes.CREATED).json(result);
 };
 
+const removeTurnoDiaConectado = async (req: Request, res: Response) => {
+  const salidaTurnoDiaId = +req.params.salidaTurnoDiaId;
+  if (!salidaTurnoDiaId) {
+    return res
+      .status(HttpStatusCodes.BAD_REQUEST)
+      .json({ message: 'El id debe ser un número válido' });
+  }
+
+  const result = await HorarioService.removeTurnoDiaConectado(
+    salidaTurnoDiaId,
+  );
+  return res.status(HttpStatusCodes.OK).json(result);
+};
+
 const createVigencia = async (req: Request, res: Response) => {
   const horarioDiaId = +req.params.diaId;
   if (!horarioDiaId) {
@@ -335,6 +349,7 @@ export default {
   removeTurno,
   getTurnoDiaConectado,
   createTurnoDiaConectado,
+  removeTurnoDiaConectado,
   createVigencia,
   updateVigencia,
   removeVigencia,

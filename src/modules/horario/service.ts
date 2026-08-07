@@ -108,6 +108,11 @@ const _createTurnoDiaConectado = (
   return HorarioRepo.createTurnoDiaConectado(turnoId, data, userId);
 };
 
+const _removeTurnoDiaConectado = (id: number): Promise<OperationResult> => {
+  const userId = authService.getUser().id;
+  return HorarioRepo.removeTurnoDiaConectado(id, userId);
+};
+
 const _createVigencia = (
   horarioDiaId: number,
   data: CrearVigenciaDto,
@@ -160,6 +165,7 @@ export const HorarioService = {
   removeTurno: _removeTurno,
   getTurnoDiaConectado: _getTurnoDiaConectado,
   createTurnoDiaConectado: _createTurnoDiaConectado,
+  removeTurnoDiaConectado: _removeTurnoDiaConectado,
   createVigencia: _createVigencia,
   updateVigencia: _updateVigencia,
   removeVigencia: _removeVigencia,
