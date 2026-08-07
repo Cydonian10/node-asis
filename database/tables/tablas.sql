@@ -186,7 +186,7 @@ CREATE TABLE TurnoModificado
 CREATE TABLE SalidaTurnoDia
 (
     SalidaTurnoDiaId INT IDENTITY(1,1) PRIMARY KEY,
-    Fecha DATE,
+    -- dia de salida del turno extendido (solo cuando Turno.Extendido = 1)
     TurnoId INT,
     DiaId INT,
     Eliminado BIT DEFAULT 0,

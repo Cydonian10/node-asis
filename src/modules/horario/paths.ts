@@ -378,6 +378,75 @@ const HorarioPath = {
 
   /**
    * @swagger
+   * /horarios/turnos/{turnoId}/dia-conectado:
+   *   post:
+   *     tags:
+   *       - Horarios
+   *     summary: Crea el dia conectado de un turno
+   *     description: Crea la conexion (SalidaTurnoDia) entre un turno y un dia. Solo se permite si
+   *                  el turno tiene Extendido = 1 (HoraFin pasa la medianoche); el SP rechaza la
+   *                  operacion si el turno no es extendido.
+   *     parameters:
+   *       - in: path
+   *         name: turnoId
+   *         required: true
+   *         description: Id del turno (TurnoId).
+   *         schema:
+   *           type: integer
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/CrearDiaConectadoDto'
+   *     responses:
+   *       201:
+   *         description: Dia conectado creado correctamente.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/OperationResultCreate'
+   *       400:
+   *         description: Datos inválidos.
+   *       500:
+   *         description: Error interno del servidor.
+   */
+  CreateTurnoDiaConectado: '/turnos/:turnoId/dia-conectado',
+
+  /**
+   * @swagger
+   * /horarios/turnos/{turnoId}/dia-conectado:
+   *   get:
+   *     tags:
+   *       - Horarios
+   *     summary: Obtiene el dia conectado de un turno
+   *     description: Retorna los dias conectados (SalidaTurnoDia) del turno junto con su flag
+   *                  Extendido, para verificar si el turno tiene dia conectado.
+   *     parameters:
+   *       - in: path
+   *         name: turnoId
+   *         required: true
+   *         description: Id del turno (TurnoId).
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Lista de dias conectados.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/TurnoDiaConectado'
+   *       400:
+   *         description: Datos inválidos.
+   *       500:
+   *         description: Error interno del servidor.
+   */
+  GetTurnoDiaConectado: '/turnos/:turnoId/dia-conectado',
+
+  /**
+   * @swagger
    * /horarios/{id}/dias/{diaId}/vigencias:
    *   post:
    *     tags:

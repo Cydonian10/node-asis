@@ -19,6 +19,15 @@ router.post(HorarioPath.CreateTurno, Controller.createTurno);
 router.patch(HorarioPath.UpdateTurno, Controller.updateTurno);
 router.delete(HorarioPath.DeleteTurno, Controller.removeTurno);
 
+router.post(
+  HorarioPath.CreateTurnoDiaConectado,
+  Controller.createTurnoDiaConectado,
+);
+router.get(
+  HorarioPath.GetTurnoDiaConectado,
+  Controller.getTurnoDiaConectado,
+);
+
 router.post(HorarioPath.CreateVigencia, Controller.createVigencia);
 router.patch(HorarioPath.UpdateVigencia, Controller.updateVigencia);
 router.delete(HorarioPath.DeleteVigencia, Controller.removeVigencia);

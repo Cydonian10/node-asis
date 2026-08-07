@@ -24,6 +24,8 @@ import { CrearDiaDto } from './dto/crear-dia.dto.js';
 import { ActualizarDiaDto } from './dto/actualizar-dia.dto.js';
 import { CrearTurnoDto } from './dto/crear-turno.dto.js';
 import { ActualizarTurnoDto } from './dto/actualizar-turno.dto.js';
+import { CrearDiaConectadoDto } from './dto/crear-dia-conectado.dto.js';
+import { TurnoDiaConectado } from './dto/turno-dia-conectado.dto.js';
 import { CrearVigenciaDto } from './dto/crear-vigencia.dto.js';
 import { ActualizarVigenciaDto } from './dto/actualizar-vigencia.dto.js';
 import { mapHorarioDetalle } from './mapper/horario.mapper.js';
@@ -424,6 +426,49 @@ const removeTurno = async (
   }
 };
 
+const getTurnoDiaConectado = async (
+  turnoId: number,
+): Promise<TurnoDiaConectado[]> => {
+  try {
+    const pool = await connectToDb();
+    const request = pool.request();
+
+    request.input('TurnoId', sql.Int, turnoId);
+
+    const result = await request.execute<TurnoDiaConectado>(
+      'usp_GetTurnoDiaConectado',
+    );
+    return result.recordset;
+  } catch (error) {
+    return ErrorUtil.select(error as string);
+  }
+};
+
+const createTurnoDiaConectado = async (
+  turnoId: number,
+  data: CrearDiaConectadoDto,
+  userId: number,
+): Promise<OperationResultCreate> => {
+  try {
+    const pool = await connectToDb();
+    const request = pool.request();
+
+    request.input('TurnoId', sql.Int, turnoId);
+    request.input('DiaId', sql.Int, data.diaId);
+    request.input('USER', sql.Int, userId);
+
+    request.output('State', sql.Int);
+    request.output('Message', sql.VarChar(255));
+    request.output('Id', sql.Int);
+    request.output('CodeError', sql.Int);
+
+    const result = await request.execute('usp_CreateTurnoDiaConectado');
+    return handleOperationResultCreate(result.output as OperationResultCreate);
+  } catch (error) {
+    return ErrorUtil.add(error as string);
+  }
+};
+
 const createVigencia = async (
   horarioDiaId: number,
   data: CrearVigenciaDto,
@@ -577,6 +622,8 @@ export default {
   createTurno,
   updateTurno,
   removeTurno,
+  getTurnoDiaConectado,
+  createTurnoDiaConectado,
   createVigencia,
   updateVigencia,
   removeVigencia,

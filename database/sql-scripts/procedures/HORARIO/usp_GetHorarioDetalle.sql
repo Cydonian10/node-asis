@@ -55,12 +55,16 @@ BEGIN
         T.HoraInicio AS horaInicio,
         T.HoraFin AS horaFin,
         T.Extendido AS extendido,
+        SD.DiaId AS salidaDiaId,
+        SD.Nombre AS salidaDiaNombre,
         V.VigenciaId AS vigenciaId,
         V.FechaInicio AS fechaInicio,
         V.FechaFin AS fechaFin
     FROM HorarioDia HD
     INNER JOIN Dia D ON D.DiaId = HD.DiaId
     LEFT JOIN Turno T ON T.HorarioDiaId = HD.HorarioDiaId AND T.Eliminado = 0
+    LEFT JOIN SalidaTurnoDia STD ON STD.TurnoId = T.TurnoId AND STD.Eliminado = 0
+    LEFT JOIN Dia SD ON SD.DiaId = STD.DiaId
     LEFT JOIN Vigencia V ON V.HorarioDiaId = HD.HorarioDiaId AND V.Eliminado = 0
     WHERE HD.HorarioId = @HorarioId
         AND HD.Eliminado = 0

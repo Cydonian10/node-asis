@@ -66,6 +66,15 @@
  *                      type: string
  *                    extendido:
  *                      type: boolean
+ *                    diaSalida:
+ *                      type: object
+ *                      nullable: true
+ *                      description: Dia de salida del turno extendido (solo si extendido = true).
+ *                      properties:
+ *                        diaId:
+ *                          type: integer
+ *                        diaNombre:
+ *                          type: string
  */
 export type HorarioDetalle = {
   horarioId: number;
@@ -92,6 +101,7 @@ export type HorarioDetalle = {
       horaInicio: string;
       horaFin: string;
       extendido: boolean;
+      diaSalida: { diaId: number; diaNombre: string } | null;
     }[];
   }[];
   usuarios: {

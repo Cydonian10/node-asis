@@ -9,6 +9,8 @@ type DetalleRow = {
   horaInicio: string | null;
   horaFin: string | null;
   extendido: boolean | null;
+  salidaDiaId: number | null;
+  salidaDiaNombre: string | null;
   vigenciaId: number | null;
   fechaInicio: string | null;
   fechaFin: string | null;
@@ -67,6 +69,13 @@ export function mapHorarioDetalle(
         horaInicio: fila.horaInicio ?? '',
         horaFin: fila.horaFin ?? '',
         extendido: !!fila.extendido,
+        diaSalida:
+          fila.salidaDiaId !== null && fila.salidaDiaId !== undefined
+            ? {
+                diaId: fila.salidaDiaId,
+                diaNombre: fila.salidaDiaNombre ?? '',
+              }
+            : null,
       });
     }
   }

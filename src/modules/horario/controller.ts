@@ -8,6 +8,7 @@ import { CrearDiaSchema } from './validations/crear-dia.validation.js';
 import { ActualizarDiaSchema } from './validations/actualizar-dia.validation.js';
 import { CrearTurnoSchema } from './validations/crear-turno.validation.js';
 import { ActualizarTurnoSchema } from './validations/actualizar-turno.validation.js';
+import { CrearDiaConectadoSchema } from './validations/crear-dia-conectado.validation.js';
 import { CrearVigenciaSchema } from './validations/crear-vigencia.validation.js';
 import { ActualizarVigenciaSchema } from './validations/actualizar-vigencia.validation.js';
 import { AsignarUsuariosSchema } from './validations/asignar-usuarios.validation.js';
@@ -199,6 +200,41 @@ const removeTurno = async (req: Request, res: Response) => {
   return res.status(HttpStatusCodes.OK).json(result);
 };
 
+const getTurnoDiaConectado = async (req: Request, res: Response) => {
+  const turnoId = +req.params.turnoId;
+  if (!turnoId) {
+    return res
+      .status(HttpStatusCodes.BAD_REQUEST)
+      .json({ message: 'El id debe ser un número válido' });
+  }
+
+  const items = await HorarioService.getTurnoDiaConectado(turnoId);
+  return res.status(HttpStatusCodes.OK).json(items);
+};
+
+const createTurnoDiaConectado = async (req: Request, res: Response) => {
+  const turnoId = +req.params.turnoId;
+  if (!turnoId) {
+    return res
+      .status(HttpStatusCodes.BAD_REQUEST)
+      .json({ message: 'El id debe ser un número válido' });
+  }
+
+  const parsed = CrearDiaConectadoSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(HttpStatusCodes.BAD_REQUEST).json({
+      message: 'Datos inválidos',
+      errors: formatZodError(parsed.error),
+    });
+  }
+
+  const result = await HorarioService.createTurnoDiaConectado(
+    turnoId,
+    parsed.data,
+  );
+  return res.status(HttpStatusCodes.CREATED).json(result);
+};
+
 const createVigencia = async (req: Request, res: Response) => {
   const horarioDiaId = +req.params.diaId;
   if (!horarioDiaId) {
@@ -297,6 +333,8 @@ export default {
   createTurno,
   updateTurno,
   removeTurno,
+  getTurnoDiaConectado,
+  createTurnoDiaConectado,
   createVigencia,
   updateVigencia,
   removeVigencia,

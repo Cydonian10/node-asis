@@ -13,6 +13,8 @@ import { CrearDiaDto } from './dto/crear-dia.dto.js';
 import { ActualizarDiaDto } from './dto/actualizar-dia.dto.js';
 import { CrearTurnoDto } from './dto/crear-turno.dto.js';
 import { ActualizarTurnoDto } from './dto/actualizar-turno.dto.js';
+import { CrearDiaConectadoDto } from './dto/crear-dia-conectado.dto.js';
+import { TurnoDiaConectado } from './dto/turno-dia-conectado.dto.js';
 import { CrearVigenciaDto } from './dto/crear-vigencia.dto.js';
 import { ActualizarVigenciaDto } from './dto/actualizar-vigencia.dto.js';
 import { AsignarUsuariosDto } from './dto/asignar-usuarios.dto.js';
@@ -92,6 +94,20 @@ const _removeTurno = (id: number): Promise<OperationResult> => {
   return HorarioRepo.removeTurno(id, userId);
 };
 
+const _getTurnoDiaConectado = (
+  turnoId: number,
+): Promise<TurnoDiaConectado[]> => {
+  return HorarioRepo.getTurnoDiaConectado(turnoId);
+};
+
+const _createTurnoDiaConectado = (
+  turnoId: number,
+  data: CrearDiaConectadoDto,
+): Promise<OperationResultCreate> => {
+  const userId = authService.getUser().id;
+  return HorarioRepo.createTurnoDiaConectado(turnoId, data, userId);
+};
+
 const _createVigencia = (
   horarioDiaId: number,
   data: CrearVigenciaDto,
@@ -142,6 +158,8 @@ export const HorarioService = {
   createTurno: _createTurno,
   updateTurno: _updateTurno,
   removeTurno: _removeTurno,
+  getTurnoDiaConectado: _getTurnoDiaConectado,
+  createTurnoDiaConectado: _createTurnoDiaConectado,
   createVigencia: _createVigencia,
   updateVigencia: _updateVigencia,
   removeVigencia: _removeVigencia,
