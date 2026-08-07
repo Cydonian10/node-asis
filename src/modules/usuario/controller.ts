@@ -10,9 +10,7 @@ const getAllMigrados = async (req: Request, res: Response) => {
   const tipo = req.query.tipo as string | undefined;
   const busqueda = req.query.busqueda as string | undefined;
   const areaId =
-    req.query.areaId === undefined
-      ? undefined
-      : Number(req.query.areaId);
+    req.query.areaId === undefined ? undefined : Number(req.query.areaId);
 
   const items = await UsuarioService.getAllMigrados(
     activo,

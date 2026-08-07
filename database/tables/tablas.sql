@@ -76,15 +76,13 @@ CREATE TABLE Area
 CREATE TABLE Horario
 (
     HorarioId INT IDENTITY(1,1) PRIMARY KEY,
-    UnidadId INT NOT NULL,
     Nombre VARCHAR(200),
     Extendido BIT DEFAULT 0,
     Rotativo BIT DEFAULT 0,
     Regular BIT DEFAULT 1,
-    AreaId INT,
+    AreaId INT NOT NULL,
     Eliminado BIT DEFAULT 0,
     HorasLaborales INT DEFAULT 8,
-    FOREIGN KEY (UnidadId) REFERENCES Unidad(UnidadId),
     FOREIGN KEY (AreaId) REFERENCES Area(AreaId),
     CreatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedAt DATETIME2 DEFAULT GETDATE(),
@@ -503,3 +501,18 @@ CREATE TABLE AsistenciaMarcacion
     CreatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedAt DATETIME2 DEFAULT GETDATE()
 );
+
+-- Seed del catalogo Dia (7 dias) para instalaciones nuevas. Idempotente.
+IF NOT EXISTS (SELECT 1 FROM Dia)
+BEGIN
+    INSERT INTO Dia (Nombre, Abreviatura, Orden)
+    VALUES
+        ('Lunes', 'Lun', 1),
+        ('Martes', 'Mar', 2),
+        ('Miercoles', 'Mie', 3),
+        ('Jueves', 'Jue', 4),
+        ('Viernes', 'Vie', 5),
+        ('Sabado', 'Sab', 6),
+        ('Domingo', 'Dom', 7);
+END
+GO

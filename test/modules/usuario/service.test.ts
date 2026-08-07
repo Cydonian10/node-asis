@@ -3,10 +3,9 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 jest.mock('@src/modules/usuario/repository.js', () => ({
   __esModule: true,
   default: {
-    getAll: jest.fn(),
-    create: jest.fn(),
+    getAllMigrados: jest.fn(),
+    getAllSync: jest.fn(),
     update: jest.fn(),
-    remove: jest.fn(),
   },
 }));
 
@@ -20,6 +19,7 @@ jest.mock('@src/common/auth.service.js', () => ({
 
 import { UsuarioService } from '@src/modules/usuario/service.js';
 import UsuarioRepo from '@src/modules/usuario/repository.js';
+import type { Usuario } from '@src/modules/usuario/dto/usuario.dto.js';
 
 const mockedRepo = UsuarioRepo as jest.Mocked<typeof UsuarioRepo>;
 
@@ -28,84 +28,34 @@ describe('UsuarioService', () => {
     jest.clearAllMocks();
   });
 
-  describe('getAll', () => {
-    it('debe retornar lista de usuarios del repositorio', async () => {
-      const mockUsuarios = [
-        {
-          id: 1,
-          usuarioId: 100,
-          usuario: 'jperez',
-          nombre: 'Juan',
-          apellido: 'Pérez',
-          dni: '12345678',
-          rolId: 2,
-          rol: 'Docente',
-          unidadId: 3,
-          unidad: 'Facultad de Ingeniería',
-        },
-      ];
-      mockedRepo.getAll.mockResolvedValue(mockUsuarios);
+  it('debe listar usuarios migrados con sus filtros', async () => {
+    const usuarios: Usuario[] = [];
+    mockedRepo.getAllMigrados.mockResolvedValue(usuarios);
 
-      const result = await UsuarioService.getAll(2, 3, 'Juan');
+    const result = await UsuarioService.getAllMigrados(true, 'CO', 'Juan', 5);
 
-      expect(mockedRepo.getAll).toHaveBeenCalledWith(2, 3, 'Juan');
-      expect(result).toEqual(mockUsuarios);
-    });
-
-    it('debe llamar al repositorio sin filtros cuando no se pasan parametros', async () => {
-      mockedRepo.getAll.mockResolvedValue([]);
-
-      const result = await UsuarioService.getAll();
-
-      expect(mockedRepo.getAll).toHaveBeenCalledWith(
-        undefined,
-        undefined,
-        undefined,
-      );
-      expect(result).toEqual([]);
-    });
+    expect(mockedRepo.getAllMigrados).toHaveBeenCalledWith(
+      true,
+      'CO',
+      'Juan',
+      5,
+    );
+    expect(result).toEqual(usuarios);
   });
 
-  describe('create', () => {
-    it('debe crear un usuario usando el userId del auth', async () => {
-      const data = { usuarioId: 100, rolId: 2 };
-      const mockResult = {
-        Id: 1,
-        State: 1,
-        Message: 'Success',
-        CodeError: 0,
-      };
-      mockedRepo.create.mockResolvedValue(mockResult);
+  it('debe listar los usuarios sincronizados', async () => {
+    mockedRepo.getAllSync.mockResolvedValue([]);
 
-      const result = await UsuarioService.create(data);
-
-      expect(mockedRepo.create).toHaveBeenCalledWith(data, 99);
-      expect(result).toEqual(mockResult);
-    });
+    await expect(UsuarioService.getAllSync()).resolves.toEqual([]);
+    expect(mockedRepo.getAllSync).toHaveBeenCalledTimes(1);
   });
 
-  describe('update', () => {
-    it('debe actualizar un usuario con id y data', async () => {
-      const data = { rolId: 4 };
-      const mockResult = { State: 1, Message: 'Success', CodeError: 0 };
-      mockedRepo.update.mockResolvedValue(mockResult);
+  it('debe actualizar un usuario usando el userId del auth', async () => {
+    const data = { esSupervisor: true, areaId: 5 };
+    const result = { State: 1, Message: 'Success', CodeError: 0 };
+    mockedRepo.update.mockResolvedValue(result);
 
-      const result = await UsuarioService.update(1, data);
-
-      expect(mockedRepo.update).toHaveBeenCalledWith(1, data, 99);
-      expect(result).toEqual(mockResult);
-    });
-  });
-
-  describe('remove', () => {
-    it('debe eliminar un usuario pasando el id y userId', async () => {
-      const mockResult = { State: 1, Message: 'Success', CodeError: 0 };
-      mockedRepo.remove.mockResolvedValue(mockResult);
-
-      const result = await UsuarioService.remove(5);
-
-      expect(mockedRepo.remove).toHaveBeenCalledWith(5, 99);
-      expect(result).toEqual(mockResult);
-    });
+    await expect(UsuarioService.update(1, data)).resolves.toEqual(result);
+    expect(mockedRepo.update).toHaveBeenCalledWith(1, data, 99);
   });
 });

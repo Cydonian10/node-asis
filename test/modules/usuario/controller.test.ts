@@ -3,10 +3,9 @@ import type { Request, Response } from 'express';
 
 jest.mock('@src/modules/usuario/service.js', () => ({
   UsuarioService: {
-    getAll: jest.fn(),
-    create: jest.fn(),
+    getAllMigrados: jest.fn(),
+    getAllSync: jest.fn(),
     update: jest.fn(),
-    remove: jest.fn(),
   },
 }));
 
@@ -20,11 +19,10 @@ function mockReq(overrides: Partial<Request> = {}): Request {
 }
 
 function mockRes(): Response {
-  const res = {
+  return {
     status: jest.fn().mockReturnThis(),
     json: jest.fn().mockReturnThis(),
   } as unknown as Response;
-  return res;
 }
 
 describe('UsuarioController', () => {
@@ -32,41 +30,33 @@ describe('UsuarioController', () => {
     jest.clearAllMocks();
   });
 
-  describe('remove', () => {
-    it('debe retornar 200 con el resultado cuando el id es valido', async () => {
-      const mockResult = { State: 1, Message: 'Success', CodeError: 0 };
-      mockedService.remove.mockResolvedValue(mockResult);
+  it('debe actualizar area y supervisor', async () => {
+    const result = { State: 1, Message: 'Success', CodeError: 0 };
+    mockedService.update.mockResolvedValue(result);
 
-      const req = mockReq({ params: { id: '5' } });
-      const res = mockRes();
-
-      await Controller.remove(req, res);
-
-      expect(mockedService.remove).toHaveBeenCalledWith(5);
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(mockResult);
+    const req = mockReq({
+      params: { id: '5' },
+      body: { areaId: 3, esSupervisor: true },
     });
+    const res = mockRes();
 
-    it('debe retornar 400 cuando el id no es un numero valido', async () => {
-      const req = mockReq({ params: { id: '0' } });
-      const res = mockRes();
+    await Controller.update(req, res);
 
-      await Controller.remove(req, res);
-
-      expect(mockedService.remove).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        message: 'El id debe ser un número válido',
-      });
+    expect(mockedService.update).toHaveBeenCalledWith(5, {
+      areaId: 3,
+      esSupervisor: true,
     });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(result);
+  });
 
-    it('debe retornar 400 cuando el id es NaN', async () => {
-      const req = mockReq({ params: { id: 'abc' } });
-      const res = mockRes();
+  it('debe rechazar body vacío', async () => {
+    const req = mockReq({ params: { id: '5' }, body: {} });
+    const res = mockRes();
 
-      await Controller.remove(req, res);
+    await Controller.update(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(400);
-    });
+    expect(mockedService.update).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
   });
 });

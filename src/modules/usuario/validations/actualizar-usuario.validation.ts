@@ -22,9 +22,7 @@ import { z } from 'zod';
  */
 export const ActualizarUsuarioSchema = z
   .object({
-    activo: z
-      .boolean({ message: 'activo debe ser un booleano' })
-      .optional(),
+    activo: z.boolean({ message: 'activo debe ser un booleano' }).optional(),
     areaId: z
       .number({ message: 'areaId debe ser un número' })
       .int()
@@ -36,6 +34,9 @@ export const ActualizarUsuarioSchema = z
   })
   .strict()
   .refine(
-    (data) => data.activo !== undefined || data.areaId !== undefined || data.esSupervisor !== undefined,
+    (data) =>
+      data.activo !== undefined ||
+      data.areaId !== undefined ||
+      data.esSupervisor !== undefined,
     { message: 'Debe enviar al menos uno de: activo, areaId, esSupervisor' },
   );

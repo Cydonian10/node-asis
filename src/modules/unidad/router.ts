@@ -14,4 +14,3 @@ router.post(UnidadPath.CrearAreas, Controller.crearAreas);
 router.get(UnidadPath.GetUsuarios, Controller.getUsuarios);
 
 export default router;
-
