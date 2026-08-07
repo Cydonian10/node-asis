@@ -46,7 +46,13 @@ BEGIN
             RETURN;
         END
 
-        IF EXISTS (SELECT 1 FROM Horario WHERE UnidadId = @ID)
+        IF EXISTS (
+            SELECT 1
+            FROM Horario H
+            INNER JOIN Area A ON A.AreaId = H.AreaId
+            WHERE A.UnidadId = @ID
+              AND H.Eliminado = 0
+        )
         BEGIN
             SET @State = -1;
             SET @Message = 'No se puede eliminar la unidad porque tiene horarios asociados (Horario)';

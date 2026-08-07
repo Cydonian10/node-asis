@@ -1,6 +1,12 @@
 import sql from 'mssql';
 import { connectToDb } from '@src/config/db-sqlserver.js';
 import {
+  executeCreate,
+  requireCreatedId,
+  runTransaction,
+  SPOutput,
+} from '@src/util/sqlServerUtil.js';
+import {
   ErrorUtil,
   handleOperationResult,
   handleOperationResultCreate,
@@ -20,6 +26,7 @@ import { CrearTurnoDto } from './dto/crear-turno.dto.js';
 import { ActualizarTurnoDto } from './dto/actualizar-turno.dto.js';
 import { CrearVigenciaDto } from './dto/crear-vigencia.dto.js';
 import { ActualizarVigenciaDto } from './dto/actualizar-vigencia.dto.js';
+import { mapHorarioDetalle } from './mapper/horario.mapper.js';
 
 export function normalizeSqlTime(
   value: string | null | undefined,
@@ -59,32 +66,6 @@ const getAll = async (
   }
 };
 
-type DetalleRow = {
-  horarioDiaId: number;
-  diaId: number;
-  diaNombre: string;
-  orden: number;
-  turnoId: number | null;
-  horaInicio: string | null;
-  horaFin: string | null;
-  extendido: boolean | null;
-  vigenciaId: number | null;
-  fechaInicio: string | null;
-  fechaFin: string | null;
-};
-
-type HorarioRow = {
-  horarioId: number;
-  nombre: string;
-  areaId: number;
-  areaNombre: string | null;
-  unidadId: number;
-  extendido: boolean;
-  rotativo: boolean;
-  regular: boolean;
-  horasLaborales: number;
-};
-
 const getById = async (id: number): Promise<HorarioDetalle | null> => {
   try {
     const pool = await connectToDb();
@@ -94,56 +75,7 @@ const getById = async (id: number): Promise<HorarioDetalle | null> => {
 
     const result = await request.execute('usp_GetHorarioDetalle');
     const recordsets = result.recordsets as unknown as Array<Array<unknown>>;
-    const horarios = recordsets[0] as unknown as HorarioRow[];
-    const filas = recordsets[2] as unknown as DetalleRow[];
-
-    if (horarios.length === 0) return null;
-
-    const h = horarios[0];
-    const diasMap = new Map<number, HorarioDetalle['dias'][number]>();
-
-    for (const f of filas) {
-      let dia = diasMap.get(f.horarioDiaId);
-      if (!dia) {
-        dia = {
-          horarioDiaId: f.horarioDiaId,
-          diaId: f.diaId,
-          diaNombre: f.diaNombre,
-          orden: f.orden,
-          vigencia: f.vigenciaId
-            ? {
-                vigenciaId: f.vigenciaId,
-                fechaInicio: f.fechaInicio,
-                fechaFin: f.fechaFin,
-              }
-            : null,
-          turnos: [],
-        };
-        diasMap.set(f.horarioDiaId, dia);
-      }
-      if (f.turnoId !== null && f.turnoId !== undefined) {
-        dia.turnos.push({
-          turnoId: f.turnoId,
-          horaInicio: f.horaInicio ?? '',
-          horaFin: f.horaFin ?? '',
-          extendido: !!f.extendido,
-        });
-      }
-    }
-
-    return {
-      horarioId: h.horarioId,
-      nombre: h.nombre,
-      areaId: h.areaId,
-      areaNombre: h.areaNombre,
-      unidadId: h.unidadId,
-      extendido: !!h.extendido,
-      rotativo: !!h.rotativo,
-      regular: !!h.regular,
-      horasLaborales: h.horasLaborales,
-      dias: Array.from(diasMap.values()).sort((a, b) => a.orden - b.orden),
-      usuarios: [],
-    };
+    return mapHorarioDetalle(recordsets);
   } catch (error) {
     return ErrorUtil.select(error as string);
   }
@@ -165,79 +97,31 @@ const getUsuarios = async (horarioId: number): Promise<UsuarioHorario[]> => {
   }
 };
 
-async function runInTransaction<T>(
-  fn: (tx: sql.Transaction) => Promise<T>,
-): Promise<T> {
-  const pool = await connectToDb();
-  const tx = new sql.Transaction(pool);
-  await tx.begin();
-  try {
-    const result = await fn(tx);
-    await tx.commit();
-    return result;
-  } catch (error) {
-    try {
-      await tx.rollback();
-    } catch {
-      // el rollback puede fallar si la transaccion ya se cerro; no encubrimos el error original
-    }
-    throw error;
-  }
-}
-
-type SPOutput = {
-  State: number;
-  Message: string;
-  CodeError: number;
-  Id?: number | null;
-};
-
-async function executeCreate(
-  tx: sql.Transaction,
-  name: string,
-  fn: (req: sql.Request) => void,
-): Promise<{ output: SPOutput }> {
-  const req = new sql.Request(tx);
-  fn(req);
-  req.output('State', sql.Int);
-  req.output('Message', sql.VarChar(255));
-  req.output('CodeError', sql.Int);
-  const result = await req.execute(name);
-  const output = result.output as unknown as SPOutput;
-  if (output.State !== 1) {
-    throw new Error(`SP ${name} falló: ${output.Message}`);
-  }
-  return { output };
-}
-
-function requireId(output: SPOutput, sp: string): number {
-  if (output.Id === null || output.Id === undefined) {
-    throw new Error(`SP ${sp} no devolvió Id`);
-  }
-  return output.Id;
-}
-
 const create = async (
   data: CrearHorarioDto,
   userId: number,
 ): Promise<OperationResultCreate> => {
   try {
-    return await runInTransaction(async (tx) => {
-      const horarioRes = await executeCreate(tx, 'usp_CreateHorario', (req) => {
-        req.input('Nombre', sql.VarChar(200), data.nombre);
-        req.input('AreaId', sql.Int, data.areaId);
-        req.input('Extendido', sql.Bit, data.extendido);
-        req.input('Rotativo', sql.Bit, data.rotativo);
-        req.input('Regular', sql.Bit, data.regular);
-        req.input('HorasLaborales', sql.Int, data.horasLaborales);
-        req.input('USER', sql.Int, userId);
-        req.output('Id', sql.Int);
-      });
+    return await runTransaction(async (tx) => {
+      const horarioOutput = await executeCreate(
+        tx,
+        'usp_CreateHorario',
+        (req) => {
+          req.input('Nombre', sql.VarChar(200), data.nombre);
+          req.input('AreaId', sql.Int, data.areaId);
+          req.input('Extendido', sql.Bit, data.extendido);
+          req.input('Rotativo', sql.Bit, data.rotativo);
+          req.input('Regular', sql.Bit, data.regular);
+          req.input('HorasLaborales', sql.Int, data.horasLaborales);
+          req.input('USER', sql.Int, userId);
+          req.output('Id', sql.Int);
+        },
+      );
 
-      const horarioId = requireId(horarioRes.output, 'usp_CreateHorario');
+      const horarioId = requireCreatedId(horarioOutput, 'usp_CreateHorario');
 
       for (const dia of data.dias) {
-        const diaRes = await executeCreate(
+        const diaOutput = await executeCreate(
           tx,
           'usp_CreateHorarioDia',
           (req) => {
@@ -248,7 +132,10 @@ const create = async (
             req.output('Id', sql.Int);
           },
         );
-        const horarioDiaId = requireId(diaRes.output, 'usp_CreateHorarioDia');
+        const horarioDiaId = requireCreatedId(
+          diaOutput,
+          'usp_CreateHorarioDia',
+        );
 
         if (dia.vigencia) {
           await executeCreate(tx, 'usp_CreateVigencia', (req) => {
@@ -372,15 +259,19 @@ const createDia = async (
   userId: number,
 ): Promise<OperationResultCreate> => {
   try {
-    return await runInTransaction(async (tx) => {
-      const diaRes = await executeCreate(tx, 'usp_CreateHorarioDia', (req) => {
-        req.input('HorarioId', sql.Int, horarioId);
-        req.input('DiaId', sql.Int, data.diaId);
-        req.input('Orden', sql.Int, data.orden ?? 0);
-        req.input('USER', sql.Int, userId);
-        req.output('Id', sql.Int);
-      });
-      const horarioDiaId = requireId(diaRes.output, 'usp_CreateHorarioDia');
+    return await runTransaction(async (tx) => {
+      const diaOutput = await executeCreate(
+        tx,
+        'usp_CreateHorarioDia',
+        (req) => {
+          req.input('HorarioId', sql.Int, horarioId);
+          req.input('DiaId', sql.Int, data.diaId);
+          req.input('Orden', sql.Int, data.orden ?? 0);
+          req.input('USER', sql.Int, userId);
+          req.output('Id', sql.Int);
+        },
+      );
+      const horarioDiaId = requireCreatedId(diaOutput, 'usp_CreateHorarioDia');
 
       if (data.vigencia) {
         await executeCreate(tx, 'usp_CreateVigencia', (req) => {

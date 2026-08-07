@@ -43,21 +43,6 @@ CREATE TABLE SyncUsuarios
     Dni VARCHAR(20)
 );
 
-CREATE TABLE Usuario
-(
-    UsuarioId INT IDENTITY(1,1) PRIMARY KEY,
-    SyncUsuarioId INT NOT NULL UNIQUE,
-    Active BIT DEFAULT 1,
-    AreaId INT NOT NULL,
-    EsSupervisor BIT DEFAULT 0,
-    Eliminado BIT DEFAULT 0,
-    CreatedAt DATETIME2 DEFAULT GETDATE(),
-    UpdatedAt DATETIME2 DEFAULT GETDATE(),
-    FOREIGN KEY (SyncUsuarioId) REFERENCES SyncUsuarios(SyncUsuarioId),
-    FOREIGN KEY (AreaId) REFERENCES Area(AreaId)
-);
-
-
 CREATE TABLE Area
 (
     AreaId INT IDENTITY(1,1) PRIMARY KEY,
@@ -70,6 +55,20 @@ CREATE TABLE Area
     UpdatedBy VARCHAR(200),
     CreatedBy VARCHAR(200),
     FOREIGN KEY (UnidadId) REFERENCES Unidad(UnidadId)
+);
+
+CREATE TABLE Usuario
+(
+    UsuarioId INT IDENTITY(1,1) PRIMARY KEY,
+    SyncUsuarioId INT NOT NULL UNIQUE,
+    Active BIT DEFAULT 1,
+    AreaId INT NOT NULL,
+    EsSupervisor BIT DEFAULT 0,
+    Eliminado BIT DEFAULT 0,
+    CreatedAt DATETIME2 DEFAULT GETDATE(),
+    UpdatedAt DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (SyncUsuarioId) REFERENCES SyncUsuarios(SyncUsuarioId),
+    FOREIGN KEY (AreaId) REFERENCES Area(AreaId)
 );
 
 

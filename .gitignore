@@ -25,3 +25,5 @@ specs/
 
 .vscode
 .github/
+
+opencode.json
