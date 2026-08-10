@@ -24,14 +24,14 @@ type ControlRow = {
 type TurnoVigenteRow = {
   turnoId: number;
   horarioDiaId: number;
-  horaInicio: string;
-  horaFin: string;
+  horaInicio: string | Date;
+  horaFin: string | Date;
   extendido: boolean;
   diaIdEntrada: number;
   salidaDiaId: number | null;
   vigenciaId: number | null;
-  fechaInicio: string | null;
-  fechaFin: string | null;
+  fechaInicio: string | Date | null;
+  fechaFin: string | Date | null;
   esEntradaMatch: boolean;
   distancia: number;
 };
@@ -50,18 +50,18 @@ type MarcacionPendienteRow = {
 type ReprocesarAsistenciaRow = {
   asistenciaId: number;
   usuarioId: number;
-  fecha: string;
+  fecha: string | Date;
   estadoEntradaId: number | null;
   estadoSalidaId: number | null;
   resultadoAsistencia: string | null;
   controlId: number | null;
   horaEntrada: Date | null;
   horaSalida: Date | null;
-  vigenciaInicio: string | null;
-  vigenciaFin: string | null;
-  turnoEntrada: string | null;
+  vigenciaInicio: string | Date | null;
+  vigenciaFin: string | Date | null;
+  turnoEntrada: string | Date | null;
   turnoId: number | null;
-  turnoSalida: string | null;
+  turnoSalida: string | Date | null;
   asistenciaMarcacionId: number | null;
   marcacionId: number | null;
   tipoMarcacion: string | null;
@@ -70,11 +70,11 @@ type ReprocesarAsistenciaRow = {
 
 type ReprocesarFaltaRow = {
   usuarioId: number;
-  fecha: string;
+  fecha: string | Date;
   turnoId: number;
   horarioDiaId: number;
-  horaInicio: string;
-  horaFin: string;
+  horaInicio: string | Date;
+  horaFin: string | Date;
   extendido: boolean;
   diaIdEntrada: number;
   salidaDiaId: number | null;
@@ -90,9 +90,23 @@ type EstadoRow = {
 // ---------------------------------------------------------------------------
 
 export function normalizeSqlTime(
-  value: string | null | undefined,
+  value: string | Date | null | undefined,
 ): Date | null {
   if (value === null || value === undefined) return null;
+
+  if (value instanceof Date) {
+    return new Date(
+      Date.UTC(
+        1970,
+        0,
+        1,
+        value.getUTCHours(),
+        value.getUTCMinutes(),
+        value.getUTCSeconds(),
+        value.getUTCMilliseconds(),
+      ),
+    );
+  }
 
   const match = /^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(value);
   if (!match) {
@@ -106,7 +120,7 @@ export function normalizeSqlTime(
     throw new Error('La hora no es válida');
   }
 
-  return new Date(1970, 0, 1, hours, minutes, seconds, 0);
+  return new Date(Date.UTC(1970, 0, 1, hours, minutes, seconds, 0));
 }
 
 function pad(n: number): string {
@@ -114,40 +128,48 @@ function pad(n: number): string {
 }
 
 function isoDate(d: Date): string {
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
 }
 
 function timeOf(d: Date): string {
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  return `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
+}
+
+function timeValue(value: string | Date): string {
+  return value instanceof Date ? timeOf(value) : value;
+}
+
+function dateValue(value: string | Date): string {
+  return value instanceof Date ? isoDate(value) : value;
 }
 
 /** DiaId 1=Lunes ... 7=Domingo a partir de una fecha. */
-function weekdayOf(d: Date): number {
-  return ((d.getDay() + 6) % 7) + 1;
+export function weekdayOf(d: Date): number {
+  return ((d.getUTCDay() + 6) % 7) + 1;
 }
 
 /** Fecha ISO + tiempo como Date. */
-function atDateTime(iso: string, time: string): Date {
-  return new Date(`${iso}T${time}`);
+function atDateTime(iso: string, time: string | Date): Date {
+  return new Date(`${iso}T${timeValue(time)}Z`);
 }
 
 /** Siguiente fecha (>= base) cuyo dia de la semana es targetDiaId, barriendo hasta 7 dias. */
-function nextWeekdayIso(baseIso: string, targetDiaId: number): string {
-  const base = new Date(`${baseIso}T00:00:00`);
+export function nextWeekdayIso(baseIso: string, targetDiaId: number): string {
+  const base = new Date(`${baseIso}T00:00:00Z`);
   for (let i = 0; i < 7; i++) {
     const d = new Date(base);
-    d.setDate(base.getDate() + i);
+    d.setUTCDate(base.getUTCDate() + i);
     if (weekdayOf(d) === targetDiaId) return isoDate(d);
   }
   return baseIso;
 }
 
 /** Fecha anterior (<= base) cuyo dia de la semana es targetDiaId, barriendo hasta 7 dias atras. */
-function prevWeekdayIso(baseIso: string, targetDiaId: number): string {
-  const base = new Date(`${baseIso}T00:00:00`);
+export function prevWeekdayIso(baseIso: string, targetDiaId: number): string {
+  const base = new Date(`${baseIso}T00:00:00Z`);
   for (let i = 0; i < 7; i++) {
     const d = new Date(base);
-    d.setDate(base.getDate() - i);
+    d.setUTCDate(base.getUTCDate() - i);
     if (weekdayOf(d) === targetDiaId) return isoDate(d);
   }
   return baseIso;
@@ -310,7 +332,7 @@ async function updateGuardHorasRaw(
 // Clasificacion de estados
 // ---------------------------------------------------------------------------
 
-function classificarEntrada(
+export function classificarEntrada(
   estados: Map<string, number>,
   marca: Date,
   entradaTarget: Date,
@@ -323,7 +345,7 @@ function classificarEntrada(
   return null;
 }
 
-function classificarSalida(
+export function classificarSalida(
   estados: Map<string, number>,
   marca: Date,
   salidaTarget: Date,
@@ -344,7 +366,7 @@ function nombreEstado(
   return null;
 }
 
-function combinarResultado(
+export function combinarResultado(
   nombreEntrada: string | null,
   nombreSalida: string | null,
 ): string {
@@ -372,7 +394,7 @@ type GrupoTurno = {
   mejorSalida: { marcacionId: number; punchTime: Date; dist: number } | null;
 };
 
-function targetFechas(
+export function targetFechas(
   turno: TurnoVigenteRow,
   fecha: string,
 ): { entradaIso: string; salidaIso: string } {
@@ -643,31 +665,28 @@ const procesarMarcaciones = async (
 
         if (asistenciaId) {
           // Asistencia existente: actualizar entrada y salida
-          await updateEntradaRaw(
-            tx,
-            asistenciaId,
-            grupo.mejorEntrada?.punchTime ?? null,
-            entradaIdFinal,
-            resultadoStr,
-            userId,
-          );
-          if (grupo.mejorSalida) {
-            const salidaOutput = await executeCreate(
+          if (grupo.mejorEntrada) {
+            await updateEntradaRaw(
               tx,
-              'usp_UpdateAsistenciaSalida',
-              (req) => {
-                req.input('AsistenciaId', sql.Int, asistenciaId!);
-                req.input(
-                  'HoraSalida',
-                  sql.DateTime2,
-                  grupo.mejorSalida!.punchTime,
-                );
-                req.input('EstadoSalidaId', sql.Int, salidaIdFinal);
-                req.input('ResultadoAsistencia', sql.VarChar(50), resultadoStr);
-                req.input('USER', sql.Int, userId);
-              },
+              asistenciaId,
+              grupo.mejorEntrada.punchTime,
+              entradaIdFinal,
+              resultadoStr,
+              userId,
             );
-            void salidaOutput;
+          }
+          if (grupo.mejorSalida) {
+            await executeCreate(tx, 'usp_UpdateAsistenciaSalida', (req) => {
+              req.input('AsistenciaId', sql.Int, asistenciaId!);
+              req.input(
+                'HoraSalida',
+                sql.DateTime2,
+                grupo.mejorSalida!.punchTime,
+              );
+              req.input('EstadoSalidaId', sql.Int, salidaIdFinal);
+              req.input('ResultadoAsistencia', sql.VarChar(50), null);
+              req.input('USER', sql.Int, userId);
+            });
           }
           resultado.actualizadas++;
         } else {
@@ -695,13 +714,15 @@ const procesarMarcaciones = async (
                 'vigenciaInicio',
                 sql.Date,
                 turno.fechaInicio
-                  ? new Date(`${turno.fechaInicio}T00:00:00`)
+                  ? new Date(`${dateValue(turno.fechaInicio)}T00:00:00`)
                   : null,
               );
               req.input(
                 'vigenciaFin',
                 sql.Date,
-                turno.fechaFin ? new Date(`${turno.fechaFin}T00:00:00`) : null,
+                turno.fechaFin
+                  ? new Date(`${dateValue(turno.fechaFin)}T00:00:00`)
+                  : null,
               );
               req.input(
                 'turnoEntrada',
@@ -877,8 +898,11 @@ const reprocesarAsistencias = async (
           continue;
         }
 
-        const entradaTarget = atDateTime(row.fecha, row.turnoEntrada);
-        const salidaTarget = atDateTime(row.fecha, row.turnoSalida);
+        const entradaTarget = atDateTime(
+          dateValue(row.fecha),
+          row.turnoEntrada,
+        );
+        const salidaTarget = atDateTime(dateValue(row.fecha), row.turnoSalida);
 
         let mejorEntrada: Date | null = null;
         let mejorSalida: Date | null = null;
@@ -948,7 +972,7 @@ const reprocesarAsistencias = async (
           marcacionId: 0,
           asistenciaId: row.asistenciaId,
           usuarioId: row.usuarioId,
-          fecha: row.fecha,
+          fecha: dateValue(row.fecha),
           tipoMarcacion: 'entrada',
           estadoEntrada: nombreEstado(estados, entradaIdFinal),
           estadoSalida: nombreEstado(estados, salidaIdFinal),
@@ -958,14 +982,15 @@ const reprocesarAsistencias = async (
 
       // Crear Falta (o guard) para turnos vigentes sin asistencia ya finalizados
       for (const falta of faltas) {
-        const guard = await getGuardActivo(tx, falta.usuarioId, falta.fecha);
+        const fechaFalta = dateValue(falta.fecha);
+        const guard = await getGuardActivo(tx, falta.usuarioId, fechaFalta);
         const nombreGuard = guard?.tipoGuard ?? 'Falta';
         const output = await executeCreate(
           tx,
           'usp_CreateAsistenciaGuard',
           (req) => {
             req.input('UsuarioId', sql.Int, falta.usuarioId);
-            req.input('Fecha', sql.Date, new Date(`${falta.fecha}T00:00:00`));
+            req.input('Fecha', sql.Date, new Date(`${fechaFalta}T00:00:00`));
             req.input('TurnoId', sql.Int, falta.turnoId);
             req.input('GuardNombre', sql.VarChar(50), nombreGuard);
             req.input(
@@ -983,7 +1008,7 @@ const reprocesarAsistencias = async (
           marcacionId: 0,
           asistenciaId: output.Id ?? null,
           usuarioId: falta.usuarioId,
-          fecha: falta.fecha,
+          fecha: fechaFalta,
           tipoMarcacion: 'entrada',
           estadoEntrada: nombreGuard,
           estadoSalida: nombreGuard,

@@ -31,7 +31,7 @@ const config = {
     },
     {
       displayName: 'e2e',
-      testMatch: ['<rootDir>/test/**/*.test.ts'],
+       testMatch: ['<rootDir>/test/e2e/**/*.e2e.test.ts'],
       transform: {
         '^.+\\.ts$': ['ts-jest', tsJestE2e],
       },

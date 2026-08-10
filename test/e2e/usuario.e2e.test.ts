@@ -27,26 +27,26 @@ describe('Usuario E2E', () => {
     jest.clearAllMocks();
   });
 
-  describe(`DELETE ${BASE}/:id`, () => {
-    it('debe retornar 200 y OperationResult cuando el id es valido', async () => {
+  describe(`PATCH ${BASE}/:id`, () => {
+    it('debe retornar 200 y OperationResult cuando el body es valido', async () => {
       const mockResult = { State: 1, Message: 'Eliminado', CodeError: 0 };
-      mockRepo.remove.mockResolvedValue(mockResult);
+      mockRepo.update.mockResolvedValue(mockResult);
 
-      const res = await agent.delete(`${BASE}/1`);
+      const res = await agent.patch(`${BASE}/1`).send({ activo: false });
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual(mockResult);
     });
 
     it('debe retornar 400 cuando el id es 0', async () => {
-      const res = await agent.delete(`${BASE}/0`);
+      const res = await agent.patch(`${BASE}/0`).send({ activo: false });
 
       expect(res.status).toBe(400);
       expect(res.body.message).toBe('El id debe ser un número válido');
     });
 
-    it('debe retornar 400 cuando el id no es numerico', async () => {
-      const res = await agent.delete(`${BASE}/abc`);
+    it('debe retornar 400 cuando el body está vacío', async () => {
+      const res = await agent.patch(`${BASE}/1`).send({});
 
       expect(res.status).toBe(400);
     });

@@ -83,9 +83,17 @@ BEGIN
         )
         AND (
             -- el turno ya termino (HoraFin + 1 dia si extendido)
-            (T.Extendido = 0 AND DATEADD(MINUTE, DATEDIFF(MINUTE, 0, T.HoraFin), @DiaBarrido) <= GETDATE())
+            (T.Extendido = 0 AND DATEADD(
+                MINUTE,
+                DATEDIFF(MINUTE, CAST('00:00:00' AS TIME), T.HoraFin),
+                CAST(@DiaBarrido AS DATETIME2)
+            ) <= GETDATE())
             OR
-            (T.Extendido = 1 AND DATEADD(MINUTE, DATEDIFF(MINUTE, 0, T.HoraFin), DATEADD(DAY, 1, @DiaBarrido)) <= GETDATE())
+            (T.Extendido = 1 AND DATEADD(
+                MINUTE,
+                DATEDIFF(MINUTE, CAST('00:00:00' AS TIME), T.HoraFin),
+                DATEADD(DAY, 1, CAST(@DiaBarrido AS DATETIME2))
+            ) <= GETDATE())
         );
 END
 GO
