@@ -5,6 +5,7 @@ import { formatZodError } from '@src/util/zod-util.js';
 import { ActualizarUnidadSchema } from './validations/actualizar-unidad.validation.js';
 import { MigrarSyncUnidadSchema } from './validations/migrar-sync-unidad.validation.js';
 import { CrearAreasBatchSchema } from './validations/crear-areas-batch.validation.js';
+import { CrearSyncUnidadSchema } from './validations/crear-sync-unidad.validation.js';
 
 const getAll = async (req: Request, res: Response) => {
   const busqueda = req.query.busqueda as string | undefined;
@@ -16,6 +17,19 @@ const getAll = async (req: Request, res: Response) => {
 const getAllSync = async (req: Request, res: Response) => {
   const items = await UnidadService.getAllSync();
   return res.status(HttpStatusCodes.OK).json(items);
+};
+
+const createSyncUnidad = async (req: Request, res: Response) => {
+  const parsed = CrearSyncUnidadSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(HttpStatusCodes.BAD_REQUEST).json({
+      message: 'Datos inválidos',
+      errors: formatZodError(parsed.error),
+    });
+  }
+
+  const result = await UnidadService.createSyncUnidad(parsed.data);
+  return res.status(HttpStatusCodes.CREATED).json(result);
 };
 
 const update = async (req: Request, res: Response) => {
@@ -98,6 +112,7 @@ const getUsuarios = async (req: Request, res: Response) => {
 export default {
   getAll,
   getAllSync,
+  createSyncUnidad,
   update,
   remove,
   migrar,

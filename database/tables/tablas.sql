@@ -16,6 +16,12 @@ IF NOT EXISTS (SELECT 1 FROM sys.types WHERE name = 'AreaBatchTableType' AND is_
     EXEC(N'CREATE TYPE dbo.AreaBatchTableType AS TABLE (Nombre VARCHAR(200) NOT NULL, Descripcion VARCHAR(255) NULL)');
 GO
 
+IF NOT EXISTS (SELECT 1 FROM sys.types WHERE name = 'SyncUsuarioBatchTableType' AND is_table_type = 1)
+    EXEC(N'CREATE TYPE dbo.SyncUsuarioBatchTableType AS TABLE
+          (SyncUsuarioId INT NULL, Usuario VARCHAR(200) NULL, Nombres VARCHAR(200) NULL,
+           Apellidos VARCHAR(200) NULL, Tipo VARCHAR(50) NULL, Dni VARCHAR(20) NULL)');
+GO
+
 CREATE TABLE SyncUnidad
 (
     SyncUnidadId INT NOT NULL PRIMARY KEY,
@@ -62,12 +68,24 @@ CREATE TABLE Usuario
     UsuarioId INT IDENTITY(1,1) PRIMARY KEY,
     SyncUsuarioId INT NOT NULL UNIQUE,
     Active BIT DEFAULT 1,
+    Eliminado BIT DEFAULT 0,
+    CreatedAt DATETIME2 DEFAULT GETDATE(),
+    UpdatedAt DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (SyncUsuarioId) REFERENCES SyncUsuarios(SyncUsuarioId)
+);
+
+-- Un usuario puede tener un area por unidad (validado en los SPs).
+CREATE TABLE UsuarioArea
+(
+    UsuarioAreaId INT IDENTITY(1,1) PRIMARY KEY,
+    UsuarioId INT NOT NULL,
     AreaId INT NOT NULL,
     EsSupervisor BIT DEFAULT 0,
     Eliminado BIT DEFAULT 0,
     CreatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedAt DATETIME2 DEFAULT GETDATE(),
-    FOREIGN KEY (SyncUsuarioId) REFERENCES SyncUsuarios(SyncUsuarioId),
+    UNIQUE (UsuarioId, AreaId),
+    FOREIGN KEY (UsuarioId) REFERENCES Usuario(UsuarioId),
     FOREIGN KEY (AreaId) REFERENCES Area(AreaId)
 );
 

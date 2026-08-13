@@ -34,14 +34,16 @@ BEGIN
 
         IF EXISTS (
             SELECT 1
-            FROM Usuario U
-            INNER JOIN Area A ON A.AreaId = U.AreaId
+            FROM UsuarioArea UA
+            INNER JOIN Area A ON A.AreaId = UA.AreaId
+            INNER JOIN Usuario U ON U.UsuarioId = UA.UsuarioId
             WHERE A.UnidadId = @ID
               AND U.Eliminado = 0
+              AND UA.Eliminado = 0
         )
         BEGIN
             SET @State = -1;
-            SET @Message = 'No se puede eliminar la unidad porque tiene usuarios asignados (Usuario via Area)';
+            SET @Message = 'No se puede eliminar la unidad porque tiene usuarios asignados (UsuarioArea)';
             SET @CodeError = -1;
             RETURN;
         END

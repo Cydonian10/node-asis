@@ -14,6 +14,7 @@ import { Area } from './dto/area.dto.js';
 import { UsuarioArea } from './dto/usuario-area.dto.js';
 import { CrearAreaDto } from './dto/crear-area.dto.js';
 import { ActualizarAreaDto } from './dto/actualizar-area.dto.js';
+import { AsignarUsuariosDto } from './dto/asignar-usuarios.dto.js';
 
 const getAll = async (
   unidadId?: number,
@@ -134,7 +135,7 @@ const getUsuarios = async (areaId: number): Promise<UsuarioArea[]> => {
 
 const asignarUsuarios = async (
   areaId: number,
-  syncUsuarioIds: number[],
+  syncUsuarios: AsignarUsuariosDto['syncUsuarios'],
   userId: number,
 ): Promise<OperationResult> => {
   try {
@@ -143,12 +144,24 @@ const asignarUsuarios = async (
 
     request.input('AreaId', sql.Int, areaId);
 
-    const tvp = new sql.Table('IntListTableType');
-    tvp.columns.add('Value', sql.Int);
-    for (const id of syncUsuarioIds) {
-      tvp.rows.add(id);
+    const tvp = new sql.Table('SyncUsuarioBatchTableType');
+    tvp.columns.add('SyncUsuarioId', sql.Int);
+    tvp.columns.add('Usuario', sql.VarChar(200));
+    tvp.columns.add('Nombres', sql.VarChar(200));
+    tvp.columns.add('Apellidos', sql.VarChar(200));
+    tvp.columns.add('Tipo', sql.VarChar(50));
+    tvp.columns.add('Dni', sql.VarChar(20));
+    for (const item of syncUsuarios) {
+      tvp.rows.add(
+        item.syncUsuarioId ?? null,
+        item.usuario ?? null,
+        item.nombres ?? null,
+        item.apellidos ?? null,
+        item.tipo ?? null,
+        item.dni ?? null,
+      );
     }
-    request.input('SyncUsuarioIds', sql.TVP, tvp);
+    request.input('SyncUsuarios', sql.TVP, tvp);
 
     request.input('USER', sql.Int, userId);
 

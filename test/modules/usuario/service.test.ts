@@ -39,6 +39,7 @@ describe('UsuarioService', () => {
       'CO',
       'Juan',
       5,
+      undefined,
     );
     expect(result).toEqual(usuarios);
   });

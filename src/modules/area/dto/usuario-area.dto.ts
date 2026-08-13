@@ -10,6 +10,10 @@
  *          type: integer
  *          example: 5
  *          description: Id del usuario (Usuario.UsuarioId).
+ *        usuarioAreaId:
+ *          type: integer
+ *          example: 3
+ *          description: Id de la fila UsuarioArea.
  *        syncUsuarioId:
  *          type: integer
  *          example: 100
@@ -37,6 +41,7 @@
  */
 export type UsuarioArea = {
   usuarioId: number;
+  usuarioAreaId: number;
   syncUsuarioId: number;
   areaId: number;
   esSupervisor: boolean;

@@ -72,7 +72,10 @@ BEGIN
             INNER JOIN Usuario U ON U.UsuarioId = HA.UsuarioId
             WHERE HA.HorarioId = @ID
                 AND HA.Eliminado = 0
-                AND U.AreaId <> @AreaId;
+                AND NOT EXISTS (
+                    SELECT 1 FROM UsuarioArea UA
+                    WHERE UA.UsuarioId = U.UsuarioId AND UA.AreaId = @AreaId AND UA.Eliminado = 0
+                );
         END
 
         SET @State = 1;

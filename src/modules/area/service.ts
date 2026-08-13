@@ -49,7 +49,7 @@ const _asignarUsuarios = (
   data: AsignarUsuariosDto,
 ): Promise<OperationResult> => {
   const userId = authService.getUser().id;
-  return AreaRepo.asignarUsuarios(areaId, data.syncUsuarioIds, userId);
+  return AreaRepo.asignarUsuarios(areaId, data.syncUsuarios, userId);
 };
 
 export const AreaService = {

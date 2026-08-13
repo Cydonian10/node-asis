@@ -7,6 +7,7 @@ const router = Router();
 
 router.get(UnidadPath.GetAll, Controller.getAll);
 router.get(UnidadPath.GetAllSync, Controller.getAllSync);
+router.post(UnidadPath.CreateSync, Controller.createSyncUnidad);
 router.patch(UnidadPath.Update, Controller.update);
 router.delete(UnidadPath.Delete, Controller.remove);
 router.post(UnidadPath.Migrar, Controller.migrar);

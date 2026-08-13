@@ -36,13 +36,14 @@ describe('UsuarioController', () => {
 
     const req = mockReq({
       params: { id: '5' },
-      body: { areaId: 3, esSupervisor: true },
+      body: { usuarioAreaId: 7, areaId: 3, esSupervisor: true },
     });
     const res = mockRes();
 
     await Controller.update(req, res);
 
     expect(mockedService.update).toHaveBeenCalledWith(5, {
+      usuarioAreaId: 7,
       areaId: 3,
       esSupervisor: true,
     });

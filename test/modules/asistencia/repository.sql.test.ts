@@ -18,6 +18,8 @@ const estados = new Map([
 const turno = (overrides: Record<string, unknown> = {}) => ({
   turnoId: 1,
   horarioDiaId: 1,
+  areaId: 1,
+  unidadId: 1,
   horaInicio: '08:00:00',
   horaFin: '16:00:00',
   extendido: false,

@@ -3,12 +3,14 @@ NOMBRE: [dbo].[usp_DeleteHorario]
 FECHA: 05-08-2026
 AUTOR: Gabriel
 OBJETIVO: Soft-delete en cascada de un horario: marca Eliminado = 1 en Horario, HorarioDia, Turno,
-          Vigencia y HorarioAsignacion. Verifica restricciones: no debe haber filas en Asistencia ni
-          en Vacaciones que referencien el horario (esas tablas no tienen flag Eliminado, cuentan todas).
+          Vigencia y HorarioAsignacion. Verifica restricciones: no debe haber asistencias (via
+          Asistencia.turnoId -> Turno -> HorarioDia) ni vacaciones de usuarios asignados al horario
+          (esas tablas no tienen flag Eliminado, cuentan todas).
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
- -     -            -            -
+  1  13-08-2026  Gabriel    Fix: Asistencia via turnoId->Turno->HorarioDia (no existe Asistencia.HorarioId);
+                            Vacaciones via HorarioAsignacion (no existe relacion directa).
 ======================================================================================================*/
 CREATE OR ALTER PROCEDURE [dbo].[usp_DeleteHorario]
     -- Parametros de entrada
@@ -32,7 +34,13 @@ BEGIN
             RETURN;
         END
 
-        IF EXISTS (SELECT 1 FROM Asistencia WHERE HorarioId = @ID)
+        IF EXISTS (
+            SELECT 1
+            FROM Asistencia A
+            INNER JOIN Turno T ON T.TurnoId = A.turnoId
+            INNER JOIN HorarioDia HD ON HD.HorarioDiaId = T.HorarioDiaId
+            WHERE HD.HorarioId = @ID
+        )
         BEGIN
             SET @State = -1;
             SET @Message = 'No se puede eliminar el horario porque tiene asistencias asociadas (Asistencia)';
@@ -40,7 +48,12 @@ BEGIN
             RETURN;
         END
 
-        IF EXISTS (SELECT 1 FROM Vacaciones WHERE HorarioId = @ID)
+        IF EXISTS (
+            SELECT 1
+            FROM Vacaciones V
+            INNER JOIN HorarioAsignacion HA ON HA.UsuarioId = V.UsuarioId
+            WHERE HA.HorarioId = @ID AND HA.Eliminado = 0
+        )
         BEGIN
             SET @State = -1;
             SET @Message = 'No se puede eliminar el horario porque tiene vacaciones asociadas (Vacaciones)';

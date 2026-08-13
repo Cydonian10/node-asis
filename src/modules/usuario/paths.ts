@@ -78,12 +78,40 @@ const UsuarioPath = {
 
   /**
    * @swagger
+   * /usuarios/sync-usuarios:
+   *   post:
+   *     tags:
+   *       - Usuarios
+   *     summary: Crea un usuario sincronizado
+   *     description: Crea un registro en SyncUsuarios. Si no se envia syncUsuarioId, se asigna MAX+1.
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/CrearSyncUsuarioDto'
+   *     responses:
+   *       201:
+   *         description: Usuario sincronizado creado correctamente.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/OperationResultCreate'
+   *       400:
+   *         description: Datos inválidos.
+   *       500:
+   *         description: Error interno del servidor.
+   */
+  CreateSync: '/sync-usuarios',
+
+  /**
+   * @swagger
    * /usuarios/{id}:
    *   get:
    *     tags:
    *       - Usuarios
-   *     summary: Obtiene un usuario por id
-   *     description: Devuelve un usuario migrado por su UsuarioId. Excluye Eliminado = 1.
+   *     summary: Obtiene las areas de un usuario por id
+   *     description: Devuelve todas las filas (usuario, area) del usuario. Excluye Eliminado = 1.
    *     parameters:
    *       - in: path
    *         name: id
@@ -93,11 +121,13 @@ const UsuarioPath = {
    *           type: integer
    *     responses:
    *       200:
-   *         description: Usuario encontrado.
+   *         description: Lista de (usuario, area).
    *         content:
    *           application/json:
    *             schema:
-   *               $ref: '#/components/schemas/Usuario'
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/Usuario'
    *       400:
    *         description: Id no valido.
    *       404:

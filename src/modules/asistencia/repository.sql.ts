@@ -10,8 +10,6 @@ import { ProcesarAsistenciaResultado } from './dto/procesar-asistencia-resultado
 
 type UsuarioDniRow = {
   usuarioId: number;
-  areaId: number;
-  unidadId: number;
 };
 
 type ControlRow = {
@@ -24,6 +22,8 @@ type ControlRow = {
 type TurnoVigenteRow = {
   turnoId: number;
   horarioDiaId: number;
+  areaId: number;
+  unidadId: number;
   horaInicio: string | Date;
   horaFin: string | Date;
   extendido: boolean;
@@ -476,14 +476,14 @@ const procesarMarcaciones = async (
           const control = await getControlAplicable(
             tx,
             usuario.usuarioId,
-            usuario.areaId,
-            usuario.unidadId,
+            turno.areaId,
+            turno.unidadId,
           );
           const guard = await getGuardActivo(tx, usuario.usuarioId, entradaIso);
           grupo = {
             usuarioId: usuario.usuarioId,
-            areaId: usuario.areaId,
-            unidadId: usuario.unidadId,
+            areaId: turno.areaId,
+            unidadId: turno.unidadId,
             controlId: control?.controlId ?? null,
             tolerancia: control?.tolerancia ?? 0,
             limiteFalta: control?.limiteFalta ?? 0,

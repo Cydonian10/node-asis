@@ -14,6 +14,7 @@ import { SyncUnidad } from './dto/sync-unidad.dto.js';
 import { ActualizarUnidadDto } from './dto/actualizar-unidad.dto.js';
 import { UsuarioUnidad } from './dto/usuario-unidad.dto.js';
 import { CrearAreasBatchItem } from './dto/crear-areas-batch.dto.js';
+import { CrearSyncUnidadDto } from './dto/crear-sync-unidad.dto.js';
 
 const getAllMigradas = async (busqueda?: string): Promise<Unidad[]> => {
   try {
@@ -38,6 +39,29 @@ const getAllSync = async (): Promise<SyncUnidad[]> => {
     return result.recordset;
   } catch (error) {
     return ErrorUtil.select(error as string);
+  }
+};
+
+const createSyncUnidad = async (
+  data: CrearSyncUnidadDto,
+): Promise<OperationResultCreate> => {
+  try {
+    const pool = await connectToDb();
+    const request = pool.request();
+
+    request.input('SyncUnidadId', sql.Int, data.syncUnidadId ?? null);
+    request.input('Codigo', sql.VarChar(50), data.codigo ?? null);
+    request.input('Nombre', sql.VarChar(200), data.nombre);
+
+    request.output('State', sql.Int);
+    request.output('Message', sql.VarChar(255));
+    request.output('Id', sql.Int);
+    request.output('CodeError', sql.Int);
+
+    const result = await request.execute('usp_CreateSyncUnidad');
+    return handleOperationResultCreate(result.output as OperationResultCreate);
+  } catch (error) {
+    return ErrorUtil.add(error as string);
   }
 };
 
@@ -163,6 +187,7 @@ const crearAreas = async (
 export default {
   getAllMigradas,
   getAllSync,
+  createSyncUnidad,
   updateHoras,
   remove,
   migrar,

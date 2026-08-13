@@ -27,6 +27,8 @@ BEGIN
     SELECT TOP 1
         T.TurnoId AS turnoId,
         HD.HorarioDiaId AS horarioDiaId,
+        H.AreaId AS areaId,
+        A.UnidadId AS unidadId,
         T.HoraInicio AS horaInicio,
         T.HoraFin AS horaFin,
         T.Extendido AS extendido,
@@ -41,6 +43,7 @@ BEGIN
             @Hora)) AS distancia
     FROM HorarioAsignacion HA
     INNER JOIN Horario H ON H.HorarioId = HA.HorarioId AND H.Eliminado = 0
+    INNER JOIN Area A ON A.AreaId = H.AreaId AND A.Eliminado = 0
     INNER JOIN HorarioDia HD ON HD.HorarioId = H.HorarioId AND HD.Eliminado = 0
     INNER JOIN Turno T ON T.HorarioDiaId = HD.HorarioDiaId AND T.Eliminado = 0
     LEFT JOIN SalidaTurnoDia STD ON STD.TurnoId = T.TurnoId AND STD.Eliminado = 0

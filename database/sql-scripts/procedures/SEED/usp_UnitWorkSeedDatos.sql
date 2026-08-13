@@ -154,10 +154,19 @@ BEGIN
                (2002, 'mlopez', 'Maria', 'Lopez', 'CO', '20020002'),
                (2003, 'cramirez', 'Carlos', 'Ramirez', 'AL', '20030003');
 
-        INSERT INTO Usuario (SyncUsuarioId, Active, AreaId, EsSupervisor, Eliminado)
-        VALUES (2001, 1, @AreaColegio, 0, 0),
-               (2002, 1, @AreaColegio, 0, 0),
-               (2003, 1, @AreaAcademia, 0, 0);
+        INSERT INTO Usuario (SyncUsuarioId, Active, Eliminado)
+        VALUES (2001, 1, 0),
+               (2002, 1, 0),
+               (2003, 1, 0);
+
+        -- Areas del usuario por unidad (modelo multi-area)
+        INSERT INTO UsuarioArea (UsuarioId, AreaId, EsSupervisor, Eliminado)
+        SELECT U.UsuarioId, V.AreaId, V.EsSupervisor, 0
+        FROM (VALUES (2001, @AreaColegio, 0),
+                     (2002, @AreaColegio, 0),
+                     (2003, @AreaAcademia, 0)
+        ) V(SyncUsuarioId, AreaId, EsSupervisor)
+        INNER JOIN Usuario U ON U.SyncUsuarioId = V.SyncUsuarioId;
 
         -- ===================== HORARIOS =====================
         -- Horario 1: Colegio, regular, CON turno extendido (Viernes cruza medianoche)

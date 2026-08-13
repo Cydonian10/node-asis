@@ -10,6 +10,7 @@ import { ActualizarUnidadDto } from './dto/actualizar-unidad.dto.js';
 import { MigrarSyncUnidadDto } from './dto/migrar-sync-unidad.dto.js';
 import { UsuarioUnidad } from './dto/usuario-unidad.dto.js';
 import { CrearAreasBatchItem } from './dto/crear-areas-batch.dto.js';
+import { CrearSyncUnidadDto } from './dto/crear-sync-unidad.dto.js';
 
 const _getAllMigradas = (busqueda?: string): Promise<Unidad[]> => {
   return UnidadRepo.getAllMigradas(busqueda);
@@ -17,6 +18,12 @@ const _getAllMigradas = (busqueda?: string): Promise<Unidad[]> => {
 
 const _getAllSync = (): Promise<SyncUnidad[]> => {
   return UnidadRepo.getAllSync();
+};
+
+const _createSyncUnidad = (
+  data: CrearSyncUnidadDto,
+): Promise<OperationResultCreate> => {
+  return UnidadRepo.createSyncUnidad(data);
 };
 
 const _updateHoras = (
@@ -52,6 +59,7 @@ const _crearAreas = (
 export const UnidadService = {
   getAllMigradas: _getAllMigradas,
   getAllSync: _getAllSync,
+  createSyncUnidad: _createSyncUnidad,
   updateHoras: _updateHoras,
   remove: _remove,
   migrar: _migrar,

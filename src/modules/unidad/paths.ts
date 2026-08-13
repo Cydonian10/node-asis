@@ -54,6 +54,34 @@ const UnidadPath = {
 
   /**
    * @swagger
+   * /unidades/sync-unidades:
+   *   post:
+   *     tags:
+   *       - Unidades
+   *     summary: Crea una unidad sincronizada
+   *     description: Crea un registro en SyncUnidad. Si no se envia syncUnidadId, se asigna MAX+1.
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/CrearSyncUnidadDto'
+   *     responses:
+   *       201:
+   *         description: Unidad sincronizada creada correctamente.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/OperationResultCreate'
+   *       400:
+   *         description: Datos inválidos.
+   *       500:
+   *         description: Error interno del servidor.
+   */
+  CreateSync: '/sync-unidades',
+
+  /**
+   * @swagger
    * /unidades/{id}:
    *   patch:
    *     tags:

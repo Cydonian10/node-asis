@@ -10,6 +10,10 @@
  *          type: integer
  *          example: 1
  *          description: Id del usuario en la tabla Usuario.
+ *        usuarioAreaId:
+ *          type: integer
+ *          example: 3
+ *          description: Id de la fila UsuarioArea (una por area del usuario).
  *        syncUsuarioId:
  *          type: integer
  *          example: 100
@@ -60,6 +64,7 @@
  */
 export type Usuario = {
   usuarioId: number;
+  usuarioAreaId: number;
   syncUsuarioId: number;
   usuario: string;
   nombres: string;
