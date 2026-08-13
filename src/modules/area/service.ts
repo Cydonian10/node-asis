@@ -18,6 +18,10 @@ const _getAll = (
   return AreaRepo.getAll(unidadId, busqueda, tipo);
 };
 
+const _getById = (id: number): Promise<Area | null> => {
+  return AreaRepo.getById(id);
+};
+
 const _create = (data: CrearAreaDto): Promise<OperationResultCreate> => {
   const userId = authService.getUser().id;
   return AreaRepo.create(data, userId);
@@ -50,6 +54,7 @@ const _asignarUsuarios = (
 
 export const AreaService = {
   getAll: _getAll,
+  getById: _getById,
   create: _create,
   update: _update,
   remove: _remove,

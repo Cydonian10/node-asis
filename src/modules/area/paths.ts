@@ -44,6 +44,37 @@ const AreaPath = {
 
   /**
    * @swagger
+   * /areas/{id}:
+   *   get:
+   *     tags:
+   *       - Areas
+   *     summary: Obtiene un area por id
+   *     description: Devuelve un area (JOIN Unidad + SyncUnidad) por su AreaId. Excluye Eliminado = 1.
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         description: Id del area (AreaId).
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Area encontrada.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Area'
+   *       400:
+   *         description: Id no valido.
+   *       404:
+   *         description: Area no encontrada.
+   *       500:
+   *         description: Error interno del servidor.
+   */
+  GetById: '/:id',
+
+  /**
+   * @swagger
    * /areas:
    *   post:
    *     tags:

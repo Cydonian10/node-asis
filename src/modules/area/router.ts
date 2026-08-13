@@ -6,6 +6,7 @@ import Controller from './controller.js';
 const router = Router();
 
 router.get(AreaPath.GetAll, Controller.getAll);
+router.get(AreaPath.GetById, Controller.getById);
 router.post(AreaPath.Create, Controller.create);
 router.patch(AreaPath.Update, Controller.update);
 router.delete(AreaPath.Delete, Controller.remove);

@@ -2,6 +2,7 @@ import sql from 'mssql';
 import { connectToDb } from '@src/config/db-sqlserver.js';
 import {
   ErrorUtil,
+  getFirstRecordOrNull,
   handleOperationResult,
   handleOperationResultCreate,
 } from '@src/util/handleOperationResult.js';
@@ -29,6 +30,20 @@ const getAll = async (
 
     const result = await request.execute<Area>('usp_GetAreas');
     return result.recordset;
+  } catch (error) {
+    return ErrorUtil.select(error as string);
+  }
+};
+
+const getById = async (id: number): Promise<Area | null> => {
+  try {
+    const pool = await connectToDb();
+    const request = pool.request();
+
+    request.input('areaId', sql.Int, id);
+
+    const result = await request.execute<Area>('usp_GetArea');
+    return getFirstRecordOrNull(result.recordset);
   } catch (error) {
     return ErrorUtil.select(error as string);
   }
@@ -150,6 +165,7 @@ const asignarUsuarios = async (
 
 export default {
   getAll,
+  getById,
   create,
   update,
   remove,

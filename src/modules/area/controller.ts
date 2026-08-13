@@ -16,6 +16,23 @@ const getAll = async (req: Request, res: Response) => {
   return res.status(HttpStatusCodes.OK).json(items);
 };
 
+const getById = async (req: Request, res: Response) => {
+  const id = +req.params.id;
+  if (!id) {
+    return res
+      .status(HttpStatusCodes.BAD_REQUEST)
+      .json({ message: 'El id debe ser un número válido' });
+  }
+
+  const area = await AreaService.getById(id);
+  if (!area) {
+    return res
+      .status(HttpStatusCodes.NOT_FOUND)
+      .json({ message: 'El área no fue encontrada' });
+  }
+  return res.status(HttpStatusCodes.OK).json(area);
+};
+
 const create = async (req: Request, res: Response) => {
   const parsed = CrearAreaSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -95,6 +112,7 @@ const getUsuarios = async (req: Request, res: Response) => {
 
 export default {
   getAll,
+  getById,
   create,
   update,
   remove,
