@@ -34,6 +34,12 @@ const UsuarioPath = {
    *         description: Filtrar por area (AreaId).
    *         schema:
    *           type: integer
+   *       - in: query
+   *         name: unidadId
+   *         required: false
+   *         description: Filtrar por unidad (UnidadId derivado del area).
+   *         schema:
+   *           type: integer
    *     responses:
    *       200:
    *         description: Lista de usuarios migrados.
@@ -69,6 +75,37 @@ const UsuarioPath = {
    *         description: Error interno del servidor.
    */
   GetAllSync: '/sync-usuarios',
+
+  /**
+   * @swagger
+   * /usuarios/{id}:
+   *   get:
+   *     tags:
+   *       - Usuarios
+   *     summary: Obtiene un usuario por id
+   *     description: Devuelve un usuario migrado por su UsuarioId. Excluye Eliminado = 1.
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         description: Id del usuario (UsuarioId).
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Usuario encontrado.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Usuario'
+   *       400:
+   *         description: Id no valido.
+   *       404:
+   *         description: Usuario no encontrado.
+   *       500:
+   *         description: Error interno del servidor.
+   */
+  GetById: '/:id',
 
   /**
    * @swagger

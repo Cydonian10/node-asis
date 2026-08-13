@@ -10,8 +10,13 @@ const _getAllMigrados = (
   tipo?: string,
   busqueda?: string,
   areaId?: number,
+  unidadId?: number,
 ): Promise<Usuario[]> => {
-  return UsuarioRepo.getAllMigrados(activo, tipo, busqueda, areaId);
+  return UsuarioRepo.getAllMigrados(activo, tipo, busqueda, areaId, unidadId);
+};
+
+const _getById = (id: number): Promise<Usuario | null> => {
+  return UsuarioRepo.getById(id);
 };
 
 const _getAllSync = (): Promise<SyncUsuario[]> => {
@@ -28,6 +33,7 @@ const _update = (
 
 export const UsuarioService = {
   getAllMigrados: _getAllMigrados,
+  getById: _getById,
   getAllSync: _getAllSync,
   update: _update,
 };

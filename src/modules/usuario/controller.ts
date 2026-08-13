@@ -11,14 +11,34 @@ const getAllMigrados = async (req: Request, res: Response) => {
   const busqueda = req.query.busqueda as string | undefined;
   const areaId =
     req.query.areaId === undefined ? undefined : Number(req.query.areaId);
+  const unidadId =
+    req.query.unidadId === undefined ? undefined : Number(req.query.unidadId);
 
   const items = await UsuarioService.getAllMigrados(
     activo,
     tipo,
     busqueda,
     areaId,
+    unidadId,
   );
   return res.status(HttpStatusCodes.OK).json(items);
+};
+
+const getById = async (req: Request, res: Response) => {
+  const id = +req.params.id;
+  if (!id) {
+    return res
+      .status(HttpStatusCodes.BAD_REQUEST)
+      .json({ message: 'El id debe ser un número válido' });
+  }
+
+  const usuario = await UsuarioService.getById(id);
+  if (!usuario) {
+    return res
+      .status(HttpStatusCodes.NOT_FOUND)
+      .json({ message: 'El usuario no fue encontrado' });
+  }
+  return res.status(HttpStatusCodes.OK).json(usuario);
 };
 
 const getAllSync = async (req: Request, res: Response) => {
@@ -48,6 +68,7 @@ const update = async (req: Request, res: Response) => {
 
 export default {
   getAllMigrados,
+  getById,
   getAllSync,
   update,
 };

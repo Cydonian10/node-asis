@@ -2,6 +2,7 @@ import sql from 'mssql';
 import { connectToDb } from '@src/config/db-sqlserver.js';
 import {
   ErrorUtil,
+  getFirstRecordOrNull,
   handleOperationResult,
 } from '@src/util/handleOperationResult.js';
 import { OperationResult } from '@src/common/types/operation-result.js';
@@ -14,6 +15,7 @@ const getAllMigrados = async (
   tipo?: string,
   busqueda?: string,
   areaId?: number,
+  unidadId?: number,
 ): Promise<Usuario[]> => {
   try {
     const pool = await connectToDb();
@@ -23,9 +25,24 @@ const getAllMigrados = async (
     request.input('tipo', sql.VarChar(10), tipo ?? null);
     request.input('busqueda', sql.VarChar(255), busqueda ?? null);
     request.input('areaId', sql.Int, areaId ?? null);
+    request.input('unidadId', sql.Int, unidadId ?? null);
 
     const result = await request.execute<Usuario>('usp_GetUsuarios');
     return result.recordset;
+  } catch (error) {
+    return ErrorUtil.select(error as string);
+  }
+};
+
+const getById = async (id: number): Promise<Usuario | null> => {
+  try {
+    const pool = await connectToDb();
+    const request = pool.request();
+
+    request.input('usuarioId', sql.Int, id);
+
+    const result = await request.execute<Usuario>('usp_GetUsuario');
+    return getFirstRecordOrNull(result.recordset);
   } catch (error) {
     return ErrorUtil.select(error as string);
   }
@@ -71,6 +88,7 @@ const update = async (
 
 export default {
   getAllMigrados,
+  getById,
   getAllSync,
   update,
 };

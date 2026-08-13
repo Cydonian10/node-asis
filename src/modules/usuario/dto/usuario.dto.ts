@@ -48,6 +48,11 @@
  *          type: integer
  *          example: 2
  *          description: Unidad derivada del area (Area.UnidadId).
+ *        unidadNombre:
+ *          type: string
+ *          nullable: true
+ *          example: Colegio
+ *          description: Nombre de la unidad (SyncUnidad.Nombre).
  *        esSupervisor:
  *          type: boolean
  *          example: false
@@ -65,5 +70,6 @@ export type Usuario = {
   areaId: number;
   areaNombre: string | null;
   unidadId: number;
+  unidadNombre: string | null;
   esSupervisor: boolean;
 };
