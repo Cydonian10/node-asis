@@ -10,8 +10,9 @@ const getAll = async (req: Request, res: Response) => {
   const unidadId =
     req.query.unidadId === undefined ? undefined : Number(req.query.unidadId);
   const busqueda = req.query.busqueda as string | undefined;
+  const tipo = req.query.tipo as string | undefined;
 
-  const items = await AreaService.getAll(unidadId, busqueda);
+  const items = await AreaService.getAll(unidadId, busqueda, tipo);
   return res.status(HttpStatusCodes.OK).json(items);
 };
 

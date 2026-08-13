@@ -8,7 +8,7 @@ const AreaPath = {
    *     tags:
    *       - Areas
    *     summary: Lista areas
-   *     description: Lista las areas (JOIN Unidad) con filtros opcionales de unidad y busqueda. Excluye Eliminado = 1.
+   *     description: Lista las areas (JOIN Unidad + SyncUnidad) con filtros opcionales de unidad, tipo y busqueda. Excluye Eliminado = 1.
    *     parameters:
    *       - in: query
    *         name: unidadId
@@ -16,6 +16,12 @@ const AreaPath = {
    *         description: Filtrar por unidad (UnidadId).
    *         schema:
    *           type: integer
+   *       - in: query
+   *         name: tipo
+   *         required: false
+   *         description: Filtrar por tipo de unidad (SyncUnidad.Nombre), ej. Colegio, Academia, Pre Academia.
+   *         schema:
+   *           type: string
    *       - in: query
    *         name: busqueda
    *         required: false

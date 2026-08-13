@@ -17,6 +17,7 @@ import { ActualizarAreaDto } from './dto/actualizar-area.dto.js';
 const getAll = async (
   unidadId?: number,
   busqueda?: string,
+  tipo?: string,
 ): Promise<Area[]> => {
   try {
     const pool = await connectToDb();
@@ -24,6 +25,7 @@ const getAll = async (
 
     request.input('unidadId', sql.Int, unidadId ?? null);
     request.input('busqueda', sql.VarChar(255), busqueda ?? null);
+    request.input('tipo', sql.VarChar(50), tipo ?? null);
 
     const result = await request.execute<Area>('usp_GetAreas');
     return result.recordset;

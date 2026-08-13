@@ -10,8 +10,12 @@ import { CrearAreaDto } from './dto/crear-area.dto.js';
 import { ActualizarAreaDto } from './dto/actualizar-area.dto.js';
 import { AsignarUsuariosDto } from './dto/asignar-usuarios.dto.js';
 
-const _getAll = (unidadId?: number, busqueda?: string): Promise<Area[]> => {
-  return AreaRepo.getAll(unidadId, busqueda);
+const _getAll = (
+  unidadId?: number,
+  busqueda?: string,
+  tipo?: string,
+): Promise<Area[]> => {
+  return AreaRepo.getAll(unidadId, busqueda, tipo);
 };
 
 const _create = (data: CrearAreaDto): Promise<OperationResultCreate> => {
