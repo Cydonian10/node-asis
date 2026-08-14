@@ -3,12 +3,12 @@ NOMBRE: [dbo].[usp_DeleteArea]
 FECHA: 05-08-2026
 AUTOR: Gabriel
 OBJETIVO: Soft-delete (Eliminado = 1) de un area. Valida restricciones antes: no debe haber Usuarios
-          no eliminados que referencien AreaId, ni filas en Horario que referencien AreaId (Horario
-          no tiene flag Eliminado, cuentan todas). Si hay alguna, responde error (SPEC 04).
+          no eliminados que referencien AreaId via UsuarioArea, ni filas en Horario que referencien
+          AreaId (Horario no tiene flag Eliminado, cuentan todas). Si hay alguna, responde error (SPEC 04).
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
- -     -            -            -
+  1  13-08-2026  Gabriel    Modelo multi-area: validacion de usuarios via UsuarioArea.
 =====================================================================================================*/
 CREATE OR ALTER PROCEDURE [dbo].[usp_DeleteArea]
     -- Parametros de entrada
@@ -32,10 +32,17 @@ BEGIN
             RETURN;
         END
 
-        IF EXISTS (SELECT 1 FROM Usuario WHERE AreaId = @ID AND Eliminado = 0)
+        IF EXISTS (
+            SELECT 1
+            FROM UsuarioArea UA
+            INNER JOIN Usuario U ON U.UsuarioId = UA.UsuarioId
+            WHERE UA.AreaId = @ID
+              AND UA.Eliminado = 0
+              AND U.Eliminado = 0
+        )
         BEGIN
             SET @State = -1;
-            SET @Message = 'No se puede eliminar el area porque tiene usuarios asignados (Usuario)';
+            SET @Message = 'No se puede eliminar el area porque tiene usuarios asignados (UsuarioArea)';
             SET @CodeError = -1;
             RETURN;
         END

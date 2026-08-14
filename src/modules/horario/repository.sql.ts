@@ -29,6 +29,7 @@ import { TurnoDiaConectado } from './dto/turno-dia-conectado.dto.js';
 import { CrearVigenciaDto } from './dto/crear-vigencia.dto.js';
 import { ActualizarVigenciaDto } from './dto/actualizar-vigencia.dto.js';
 import { mapHorarioDetalle } from './mapper/horario.mapper.js';
+import logger from '@src/common/logger.js';
 
 export function normalizeSqlTime(
   value: string | null | undefined,
@@ -182,6 +183,12 @@ const create = async (
           tvp.rows.add(id);
         }
         req.input('UsuarioIds', sql.TVP, tvp);
+        req.input('FechaInicio', sql.Date, new Date(data.fechaInicio!));
+        req.input(
+          'FechaFin',
+          sql.Date,
+          data.fechaFin ? new Date(data.fechaFin) : null,
+        );
         req.input('USER', sql.Int, userId);
         req.output('State', sql.Int);
         req.output('Message', sql.VarChar(255));
@@ -189,9 +196,10 @@ const create = async (
         const res = await req.execute('usp_AsignarUsuariosHorario');
         const resOutput = res.output as unknown as SPOutput;
         if (resOutput.State !== 1) {
-          throw new Error(
+          logger.err(
             `SP usp_AsignarUsuariosHorario falló: ${resOutput.Message}`,
           );
+          throw new Error(`${resOutput.Message}`);
         }
       }
 
@@ -579,6 +587,8 @@ const removeVigencia = async (
 const asignarUsuarios = async (
   horarioId: number,
   usuarioIds: number[],
+  fechaInicio: string,
+  fechaFin: string | null | undefined,
   userId: number,
 ): Promise<OperationResult> => {
   try {
@@ -593,6 +603,8 @@ const asignarUsuarios = async (
       tvp.rows.add(id);
     }
     request.input('UsuarioIds', sql.TVP, tvp);
+    request.input('FechaInicio', sql.Date, new Date(fechaInicio));
+    request.input('FechaFin', sql.Date, fechaFin ? new Date(fechaFin) : null);
 
     request.input('USER', sql.Int, userId);
 

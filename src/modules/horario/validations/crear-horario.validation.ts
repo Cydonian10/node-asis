@@ -122,6 +122,17 @@ const DiaInputSchema = z.object({
  *          description: Opcional. Usuarios a asignar al horario al crearlo.
  *          items:
  *            type: integer
+ *        fechaInicio:
+ *          type: string
+ *          format: date
+ *          description: Requerida si se envian usuarioIds.
+ *          example: '2026-08-15'
+ *        fechaFin:
+ *          type: string
+ *          format: date
+ *          nullable: true
+ *          description: Fecha final de la asignacion. Null indica vigencia indefinida.
+ *          example: '2026-12-31'
  */
 export const CrearHorarioSchema = z
   .object({
@@ -162,6 +173,19 @@ export const CrearHorarioSchema = z
         message: 'usuarioIds no puede contener duplicados',
       })
       .optional(),
+    fechaInicio: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, {
+        message: 'fechaInicio debe ser una fecha válida (YYYY-MM-DD)',
+      })
+      .optional(),
+    fechaFin: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, {
+        message: 'fechaFin debe ser una fecha válida (YYYY-MM-DD)',
+      })
+      .nullable()
+      .optional(),
   })
   .strict()
   .superRefine((data, ctx) => {
@@ -175,6 +199,22 @@ export const CrearHorarioSchema = z
               'vigencia es requerida en cada dia cuando rotativo es true',
           });
         }
+      });
+    }
+
+    if (data.usuarioIds?.length && !data.fechaInicio) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['fechaInicio'],
+        message: 'fechaInicio es requerida cuando se asignan usuarios',
+      });
+    }
+
+    if (data.fechaInicio && data.fechaFin && data.fechaFin < data.fechaInicio) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['fechaFin'],
+        message: 'fechaFin no puede ser anterior a fechaInicio',
       });
     }
   });

@@ -139,7 +139,13 @@ const _asignarUsuarios = (
   data: AsignarUsuariosDto,
 ): Promise<OperationResult> => {
   const userId = authService.getUser().id;
-  return HorarioRepo.asignarUsuarios(horarioId, data.usuarioIds, userId);
+  return HorarioRepo.asignarUsuarios(
+    horarioId,
+    data.usuarioIds,
+    data.fechaInicio,
+    data.fechaFin,
+    userId,
+  );
 };
 
 const _desasignarUsuario = (

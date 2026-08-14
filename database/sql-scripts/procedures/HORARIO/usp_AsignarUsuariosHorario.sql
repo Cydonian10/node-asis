@@ -3,8 +3,8 @@ NOMBRE: [dbo].[usp_AsignarUsuariosHorario]
 FECHA: 05-08-2026
 AUTOR: Gabriel
 OBJETIVO: Asignar en lote usuarios a un horario. Valida que cada usuario exista, no este eliminado
-          y pertenezca al area del horario (Usuario.AreaId = Horario.AreaId). Inserta HorarioAsignacion
-          con FechaInicio = GETDATE() y FechaFin = NULL. No duplica (UsuarioId, HorarioId) no eliminados.
+          y pertenezca al area del horario. Inserta HorarioAsignacion con el rango de fechas recibido.
+          No duplica (UsuarioId, HorarioId) no eliminados.
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
@@ -14,6 +14,8 @@ CREATE OR ALTER PROCEDURE [dbo].[usp_AsignarUsuariosHorario]
     -- Parametros de entrada
     @HorarioId INT,
     @UsuarioIds dbo.IntListTableType READONLY,
+    @FechaInicio DATE,
+    @FechaFin DATE,
     @USER INT,
 
     -- Salidas
@@ -25,6 +27,14 @@ BEGIN
     SET NOCOUNT, XACT_ABORT ON;
 
     BEGIN TRY
+        IF @FechaFin IS NOT NULL AND @FechaFin < @FechaInicio
+        BEGIN
+            SET @State = -1;
+            SET @Message = 'FechaFin no puede ser anterior a FechaInicio';
+            SET @CodeError = -1;
+            RETURN;
+        END
+
         DECLARE @AreaId INT;
         SELECT @AreaId = AreaId
         FROM Horario
@@ -69,8 +79,8 @@ BEGIN
             INNER JOIN HorarioDia HD ON HD.HorarioId = @HorarioId AND HD.Eliminado = 0
                 AND HD.DiaId = HD2.DiaId
             INNER JOIN Turno T ON T.HorarioDiaId = HD.HorarioDiaId AND T.Eliminado = 0
-            WHERE (HA.FechaFin IS NULL OR HA.FechaFin >= CAST(GETDATE() AS DATE))
-              AND (HA.FechaInicio IS NULL OR HA.FechaInicio <= CAST(GETDATE() AS DATE))
+            WHERE (HA.FechaFin IS NULL OR @FechaInicio <= HA.FechaFin)
+              AND (@FechaFin IS NULL OR HA.FechaInicio IS NULL OR @FechaFin >= HA.FechaInicio)
               AND T.HoraInicio < T2.HoraFin
               AND T2.HoraInicio < T.HoraFin
         )
@@ -84,7 +94,7 @@ BEGIN
         BEGIN TRANSACTION;
 
         INSERT INTO HorarioAsignacion (UsuarioId, HorarioId, FechaInicio, FechaFin, Eliminado, CreatedBy, UpdatedBy)
-        SELECT t.Value, @HorarioId, CAST(GETDATE() AS DATE), NULL, 0, @USER, @USER
+        SELECT t.Value, @HorarioId, @FechaInicio, @FechaFin, 0, @USER, @USER
         FROM @UsuarioIds t
         WHERE NOT EXISTS (
             SELECT 1 FROM HorarioAsignacion HA

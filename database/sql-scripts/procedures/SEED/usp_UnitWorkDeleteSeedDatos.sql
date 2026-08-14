@@ -104,6 +104,12 @@ BEGIN
 
         DELETE H FROM Horario H WHERE H.Nombre LIKE 'Seed %';
 
+        -- UsuarioArea de areas seed (de usuarios seed y de cualquier usuario asignado a esas areas)
+        DELETE UA FROM UsuarioArea UA
+        INNER JOIN Area A ON A.AreaId = UA.AreaId
+        INNER JOIN Unidad UN ON UN.UnidadId = A.UnidadId
+        WHERE UN.SyncUnidadId IN (10, 11, 12);
+
         -- Usuarios seed
         DELETE U FROM Usuario U WHERE U.SyncUsuarioId IN (2001, 2002, 2003);
         DELETE S FROM SyncUsuarios S WHERE S.SyncUsuarioId IN (2001, 2002, 2003);

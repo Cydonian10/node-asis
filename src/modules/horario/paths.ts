@@ -592,7 +592,7 @@ const HorarioPath = {
    *     tags:
    *       - Horarios
    *     summary: Asigna usuarios a un horario
-   *     description: Asigna en lote usuarios al horario validando que pertenezcan al area del horario.
+   *     description: Asigna en lote usuarios al horario validando que pertenezcan al area del horario y que el rango de fechas no se solape con otro horario.
    *     parameters:
    *       - in: path
    *         name: id
