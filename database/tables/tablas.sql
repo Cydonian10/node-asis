@@ -137,10 +137,26 @@ CREATE TABLE Dia
     CreatedBy VARCHAR(200)
 );
 
+CREATE TABLE VigenciaGrupo
+(
+    VigenciaGrupoId INT IDENTITY(1,1) PRIMARY KEY,
+    HorarioId INT NOT NULL,
+    FechaInicio DATE,
+    FechaFin DATE,
+    Orden INT DEFAULT 0,
+    Eliminado BIT DEFAULT 0,
+    CreatedAt DATETIME2 DEFAULT GETDATE(),
+    UpdatedAt DATETIME2 DEFAULT GETDATE(),
+    UpdatedBy VARCHAR(200),
+    CreatedBy VARCHAR(200),
+    FOREIGN KEY (HorarioId) REFERENCES Horario(HorarioId)
+);
+
 CREATE TABLE HorarioDia
 (
     HorarioDiaId INT IDENTITY(1,1) PRIMARY KEY,
     HorarioId INT NOT NULL,
+    VigenciaGrupoId INT NULL,
     DiaId INT NOT NULL,
     Orden INT DEFAULT 0,
     Eliminado BIT DEFAULT 0,
@@ -149,6 +165,7 @@ CREATE TABLE HorarioDia
     UpdatedBy VARCHAR(200),
     CreatedBy VARCHAR(200),
     FOREIGN KEY (HorarioId) REFERENCES Horario(HorarioId),
+    FOREIGN KEY (VigenciaGrupoId) REFERENCES VigenciaGrupo(VigenciaGrupoId),
     FOREIGN KEY (DiaId) REFERENCES Dia(DiaId)
 );
 
@@ -168,20 +185,6 @@ CREATE TABLE Turno
     FOREIGN KEY (HorarioDiaId) REFERENCES HorarioDia(HorarioDiaId)
 );
 
-
-CREATE TABLE Vigencia
-(
-    VigenciaId INT IDENTITY(1,1) PRIMARY KEY,
-    HorarioDiaId INT NOT NULL,
-    FechaInicio DATE,
-    FechaFin DATE,
-    Eliminado BIT DEFAULT 0,
-    CreatedAt DATETIME2 DEFAULT GETDATE(),
-    UpdatedAt DATETIME2 DEFAULT GETDATE(),
-    UpdatedBy VARCHAR(200),
-    CreatedBy VARCHAR(200),
-    FOREIGN KEY (HorarioDiaId) REFERENCES HorarioDia(HorarioDiaId)
-);
 
 CREATE TABLE TurnoModificado
 (

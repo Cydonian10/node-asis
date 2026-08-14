@@ -15,18 +15,10 @@ import { z } from 'zod';
  *        orden:
  *          type: integer
  *          example: 1
- *        vigencia:
- *          type: object
+ *        vigenciaGrupoId:
+ *          type: integer
  *          nullable: true
- *          description: Requerida si el horario es rotativo.
- *          properties:
- *            fechaInicio:
- *              type: string
- *              format: date
- *            fechaFin:
- *              type: string
- *              format: date
- *              nullable: true
+ *          description: Grupo de vigencia al que pertenece el dia (requerido si el horario es rotativo).
  */
 export const CrearDiaSchema = z
   .object({
@@ -39,22 +31,11 @@ export const CrearDiaSchema = z
       .int()
       .min(0, { message: 'orden no puede ser negativo' })
       .optional(),
-    vigencia: z
-      .object({
-        fechaInicio: z
-          .string({ message: 'fechaInicio es requerido' })
-          .regex(/^\d{4}-\d{2}-\d{2}$/, {
-            message: 'fechaInicio debe ser una fecha válida (YYYY-MM-DD)',
-          }),
-        fechaFin: z
-          .string()
-          .regex(/^\d{4}-\d{2}-\d{2}$/, {
-            message: 'fechaFin debe ser una fecha válida (YYYY-MM-DD)',
-          })
-          .nullable()
-          .optional(),
-      })
-      .strict()
+    vigenciaGrupoId: z
+      .number({ message: 'vigenciaGrupoId debe ser un número' })
+      .int()
+      .positive({ message: 'vigenciaGrupoId debe ser mayor a 0' })
+      .nullable()
       .optional(),
   })
   .strict();

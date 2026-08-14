@@ -25,7 +25,7 @@ const turno = (overrides: Record<string, unknown> = {}) => ({
   extendido: false,
   diaIdEntrada: 1,
   salidaDiaId: null,
-  vigenciaId: null,
+  vigenciaGrupoId: null,
   fechaInicio: null,
   fechaFin: null,
   esEntradaMatch: true,

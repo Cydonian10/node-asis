@@ -3,14 +3,15 @@ NOMBRE: [dbo].[usp_DeleteHorario]
 FECHA: 05-08-2026
 AUTOR: Gabriel
 OBJETIVO: Soft-delete en cascada de un horario: marca Eliminado = 1 en Horario, HorarioDia, Turno,
-          Vigencia y HorarioAsignacion. Verifica restricciones: no debe haber asistencias (via
+          VigenciaGrupo y HorarioAsignacion. Verifica restricciones: no debe haber asistencias (via
           Asistencia.turnoId -> Turno -> HorarioDia) ni vacaciones de usuarios asignados al horario
           (esas tablas no tienen flag Eliminado, cuentan todas).
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
   1  13-08-2026  Gabriel    Fix: Asistencia via turnoId->Turno->HorarioDia (no existe Asistencia.HorarioId);
-                            Vacaciones via HorarioAsignacion (no existe relacion directa).
+                             Vacaciones via HorarioAsignacion (no existe relacion directa).
+  2  14-08-2026  Gabriel    Soft-delete de VigenciaGrupo (modelo grupos de vigencia).
 ======================================================================================================*/
 CREATE OR ALTER PROCEDURE [dbo].[usp_DeleteHorario]
     -- Parametros de entrada
@@ -76,11 +77,10 @@ BEGIN
         INNER JOIN HorarioDia HD ON HD.HorarioDiaId = T.HorarioDiaId
         WHERE HD.HorarioId = @ID AND T.Eliminado = 0;
 
-        UPDATE V
-        SET V.Eliminado = 1, V.UpdatedAt = GETDATE(), V.UpdatedBy = @USER
-        FROM Vigencia V
-        INNER JOIN HorarioDia HD ON HD.HorarioDiaId = V.HorarioDiaId
-        WHERE HD.HorarioId = @ID AND V.Eliminado = 0;
+        UPDATE VG
+        SET VG.Eliminado = 1, VG.UpdatedAt = GETDATE(), VG.UpdatedBy = @USER
+        FROM VigenciaGrupo VG
+        WHERE VG.HorarioId = @ID AND VG.Eliminado = 0;
 
         UPDATE HA
         SET HA.Eliminado = 1, HA.UpdatedAt = GETDATE(), HA.UpdatedBy = @USER

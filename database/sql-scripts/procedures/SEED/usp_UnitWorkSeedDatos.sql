@@ -79,9 +79,8 @@ BEGIN
         INNER JOIN Horario H ON H.HorarioId = HD.HorarioId
         WHERE H.Nombre LIKE 'Seed %';
 
-        DELETE V FROM Vigencia V
-        INNER JOIN HorarioDia HD ON HD.HorarioDiaId = V.HorarioDiaId
-        INNER JOIN Horario H ON H.HorarioId = HD.HorarioId
+        DELETE VG FROM VigenciaGrupo VG
+        INNER JOIN Horario H ON H.HorarioId = VG.HorarioId
         WHERE H.Nombre LIKE 'Seed %';
 
         DELETE HD FROM HorarioDia HD
@@ -226,13 +225,6 @@ BEGIN
         INSERT INTO Turno (HorarioDiaId, HoraInicio, HoraFin, Extendido, Eliminado, CreatedBy, UpdatedBy)
         SELECT HD.HorarioDiaId, CAST('07:00' AS TIME), CAST('15:00' AS TIME), 0, 0, @USER, @USER
         FROM HorarioDia HD WHERE HD.HorarioId = @HorarioPerm;
-
-        -- ===================== VIGENCIA (solo unidad Colegio) =====================
-        -- De hoy a fin de anio sobre los HorarioDia de los horarios de Colegio
-        INSERT INTO Vigencia (HorarioDiaId, FechaInicio, FechaFin, Eliminado, CreatedBy, UpdatedBy)
-        SELECT HD.HorarioDiaId, CAST(GETDATE() AS DATE), DATEFROMPARTS(YEAR(GETDATE()), 12, 31), 0, @USER, @USER
-        FROM HorarioDia HD
-        WHERE HD.HorarioId IN (@HorarioExt, @HorarioReg);
 
         -- ===================== ASIGNACION DE USUARIOS =====================
         INSERT INTO HorarioAsignacion (UsuarioId, HorarioId, FechaInicio, FechaFin, Eliminado, CreatedBy, UpdatedBy)

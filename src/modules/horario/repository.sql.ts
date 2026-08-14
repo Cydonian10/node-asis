@@ -26,8 +26,6 @@ import { CrearTurnoDto } from './dto/crear-turno.dto.js';
 import { ActualizarTurnoDto } from './dto/actualizar-turno.dto.js';
 import { CrearDiaConectadoDto } from './dto/crear-dia-conectado.dto.js';
 import { TurnoDiaConectado } from './dto/turno-dia-conectado.dto.js';
-import { CrearVigenciaDto } from './dto/crear-vigencia.dto.js';
-import { ActualizarVigenciaDto } from './dto/actualizar-vigencia.dto.js';
 import { mapHorarioDetalle } from './mapper/horario.mapper.js';
 import logger from '@src/common/logger.js';
 
@@ -100,6 +98,41 @@ const getUsuarios = async (horarioId: number): Promise<UsuarioHorario[]> => {
   }
 };
 
+const crearDiasHorario = async (
+  tx: sql.Transaction,
+  horarioId: number,
+  vigenciaGrupoId: number | null,
+  dias: CrearHorarioDto['dias'],
+  userId: number,
+): Promise<void> => {
+  for (const dia of dias ?? []) {
+    const diaOutput = await executeCreate(tx, 'usp_CreateHorarioDia', (req) => {
+      req.input('HorarioId', sql.Int, horarioId);
+      req.input('DiaId', sql.Int, dia.diaId);
+      req.input('VigenciaGrupoId', sql.Int, vigenciaGrupoId);
+      req.input('Orden', sql.Int, dia.orden ?? 0);
+      req.input('USER', sql.Int, userId);
+      req.output('Id', sql.Int);
+    });
+    const horarioDiaId = requireCreatedId(diaOutput, 'usp_CreateHorarioDia');
+
+    for (const turno of dia.turnos) {
+      await executeCreate(tx, 'usp_CreateTurno', (req) => {
+        req.input('HorarioDiaId', sql.Int, horarioDiaId);
+        req.input(
+          'HoraInicio',
+          sql.Time,
+          normalizeSqlTime(turno.horaInicio),
+        );
+        req.input('HoraFin', sql.Time, normalizeSqlTime(turno.horaFin));
+        req.input('Extendido', sql.Bit, turno.extendido ?? false);
+        req.input('USER', sql.Int, userId);
+        req.output('Id', sql.Int);
+      });
+    }
+  }
+};
+
 const create = async (
   data: CrearHorarioDto,
   userId: number,
@@ -123,55 +156,39 @@ const create = async (
 
       const horarioId = requireCreatedId(horarioOutput, 'usp_CreateHorario');
 
-      for (const dia of data.dias) {
-        const diaOutput = await executeCreate(
-          tx,
-          'usp_CreateHorarioDia',
-          (req) => {
-            req.input('HorarioId', sql.Int, horarioId);
-            req.input('DiaId', sql.Int, dia.diaId);
-            req.input('Orden', sql.Int, dia.orden ?? 0);
-            req.input('USER', sql.Int, userId);
-            req.output('Id', sql.Int);
-          },
-        );
-        const horarioDiaId = requireCreatedId(
-          diaOutput,
-          'usp_CreateHorarioDia',
-        );
+      if (data.rotativo) {
+        for (const [gi, grupo] of (data.grupos ?? []).entries()) {
+          const grupoOutput = await executeCreate(
+            tx,
+            'usp_CreateVigenciaGrupo',
+            (req) => {
+              req.input('HorarioId', sql.Int, horarioId);
+              req.input('FechaInicio', sql.Date, new Date(grupo.fechaInicio));
+              req.input(
+                'FechaFin',
+                sql.Date,
+                grupo.fechaFin ? new Date(grupo.fechaFin) : null,
+              );
+              req.input('Orden', sql.Int, gi + 1);
+              req.input('USER', sql.Int, userId);
+              req.output('Id', sql.Int);
+            },
+          );
+          const vigenciaGrupoId = requireCreatedId(
+            grupoOutput,
+            'usp_CreateVigenciaGrupo',
+          );
 
-        if (dia.vigencia) {
-          await executeCreate(tx, 'usp_CreateVigencia', (req) => {
-            req.input('HorarioDiaId', sql.Int, horarioDiaId);
-            req.input(
-              'FechaInicio',
-              sql.Date,
-              new Date(dia.vigencia!.fechaInicio),
-            );
-            req.input(
-              'FechaFin',
-              sql.Date,
-              dia.vigencia!.fechaFin ? new Date(dia.vigencia!.fechaFin) : null,
-            );
-            req.input('USER', sql.Int, userId);
-            req.output('Id', sql.Int);
-          });
+          await crearDiasHorario(
+            tx,
+            horarioId,
+            vigenciaGrupoId,
+            grupo.dias,
+            userId,
+          );
         }
-
-        for (const turno of dia.turnos) {
-          await executeCreate(tx, 'usp_CreateTurno', (req) => {
-            req.input('HorarioDiaId', sql.Int, horarioDiaId);
-            req.input(
-              'HoraInicio',
-              sql.Time,
-              normalizeSqlTime(turno.horaInicio),
-            );
-            req.input('HoraFin', sql.Time, normalizeSqlTime(turno.horaFin));
-            req.input('Extendido', sql.Bit, turno.extendido ?? false);
-            req.input('USER', sql.Int, userId);
-            req.output('Id', sql.Int);
-          });
-        }
+      } else {
+        await crearDiasHorario(tx, horarioId, null, data.dias ?? [], userId);
       }
 
       if (data.usuarioIds && data.usuarioIds.length > 0) {
@@ -276,30 +293,13 @@ const createDia = async (
         (req) => {
           req.input('HorarioId', sql.Int, horarioId);
           req.input('DiaId', sql.Int, data.diaId);
+          req.input('VigenciaGrupoId', sql.Int, data.vigenciaGrupoId ?? null);
           req.input('Orden', sql.Int, data.orden ?? 0);
           req.input('USER', sql.Int, userId);
           req.output('Id', sql.Int);
         },
       );
       const horarioDiaId = requireCreatedId(diaOutput, 'usp_CreateHorarioDia');
-
-      if (data.vigencia) {
-        await executeCreate(tx, 'usp_CreateVigencia', (req) => {
-          req.input('HorarioDiaId', sql.Int, horarioDiaId);
-          req.input(
-            'FechaInicio',
-            sql.Date,
-            new Date(data.vigencia!.fechaInicio),
-          );
-          req.input(
-            'FechaFin',
-            sql.Date,
-            data.vigencia!.fechaFin ? new Date(data.vigencia!.fechaFin) : null,
-          );
-          req.input('USER', sql.Int, userId);
-          req.output('Id', sql.Int);
-        });
-      }
 
       return {
         Id: horarioDiaId,
@@ -499,91 +499,6 @@ const removeTurnoDiaConectado = async (
   }
 };
 
-const createVigencia = async (
-  horarioDiaId: number,
-  data: CrearVigenciaDto,
-  userId: number,
-): Promise<OperationResultCreate> => {
-  try {
-    const pool = await connectToDb();
-    const request = pool.request();
-
-    request.input('HorarioDiaId', sql.Int, horarioDiaId);
-    request.input('FechaInicio', sql.Date, new Date(data.fechaInicio));
-    request.input(
-      'FechaFin',
-      sql.Date,
-      data.fechaFin ? new Date(data.fechaFin) : null,
-    );
-    request.input('USER', sql.Int, userId);
-
-    request.output('State', sql.Int);
-    request.output('Message', sql.VarChar(255));
-    request.output('Id', sql.Int);
-    request.output('CodeError', sql.Int);
-
-    const result = await request.execute('usp_CreateVigencia');
-    return handleOperationResultCreate(result.output as OperationResultCreate);
-  } catch (error) {
-    return ErrorUtil.add(error as string);
-  }
-};
-
-const updateVigencia = async (
-  id: number,
-  data: ActualizarVigenciaDto,
-  userId: number,
-): Promise<OperationResult> => {
-  try {
-    const pool = await connectToDb();
-    const request = pool.request();
-
-    request.input('ID', sql.Int, id);
-    request.input(
-      'FechaInicio',
-      sql.Date,
-      data.fechaInicio ? new Date(data.fechaInicio) : null,
-    );
-    request.input(
-      'FechaFin',
-      sql.Date,
-      data.fechaFin ? new Date(data.fechaFin) : null,
-    );
-    request.input('USER', sql.Int, userId);
-
-    request.output('State', sql.Int);
-    request.output('Message', sql.VarChar(255));
-    request.output('CodeError', sql.Int);
-
-    const result = await request.execute('usp_UpdateVigencia');
-    return handleOperationResult(result.output as OperationResult);
-  } catch (error) {
-    return ErrorUtil.update(error as string);
-  }
-};
-
-const removeVigencia = async (
-  id: number,
-  userId: number,
-): Promise<OperationResult> => {
-  try {
-    const pool = await connectToDb();
-    const request = pool.request();
-
-    request.input('ID', sql.Int, id);
-    request.input('USER', sql.Int, userId);
-
-    request.output('State', sql.Int);
-    request.output('Message', sql.VarChar(255));
-    request.output('CodeError', sql.Int);
-
-    const result = await request.execute('usp_DeleteVigencia');
-    return handleOperationResult(result.output as OperationResult);
-  } catch (error) {
-    return ErrorUtil.delete(error as string);
-  }
-};
-
 const asignarUsuarios = async (
   horarioId: number,
   usuarioIds: number[],
@@ -659,9 +574,6 @@ export default {
   getTurnoDiaConectado,
   createTurnoDiaConectado,
   removeTurnoDiaConectado,
-  createVigencia,
-  updateVigencia,
-  removeVigencia,
   asignarUsuarios,
   desasignarUsuario,
 };

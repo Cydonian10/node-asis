@@ -4,7 +4,8 @@
  *  schemas:
  *    HorarioDetalle:
  *      type: object
- *      description: Horario con dias, turnos y vigencias anidadas, listo para dibujar en el front.
+ *      description: Horario con grupos de vigencia (rotativo) o dias (no rotativo), turnos y
+ *                   usuarios asignados, listo para dibujar en el front.
  *      properties:
  *        horarioId:
  *          type: integer
@@ -28,6 +29,7 @@
  *          type: integer
  *        dias:
  *          type: array
+ *          description: Dias del horario. Solo cuando rotativo es false.
  *          items:
  *            type: object
  *            properties:
@@ -39,20 +41,9 @@
  *                type: string
  *              orden:
  *                type: integer
- *              vigencia:
- *                type: object
+ *              vigenciaGrupoId:
+ *                type: integer
  *                nullable: true
- *                properties:
- *                  vigenciaId:
- *                    type: integer
- *                  fechaInicio:
- *                    type: string
- *                    format: date
- *                    nullable: true
- *                  fechaFin:
- *                    type: string
- *                    format: date
- *                    nullable: true
  *              turnos:
  *                type: array
  *                items:
@@ -75,6 +66,59 @@
  *                          type: integer
  *                        diaNombre:
  *                          type: string
+ *        grupos:
+ *          type: array
+ *          description: Grupos de vigencia del horario. Solo cuando rotativo es true. Cada grupo
+ *                       tiene su rango de fechas y sus propios dias con turnos.
+ *          items:
+ *            type: object
+ *            properties:
+ *              vigenciaGrupoId:
+ *                type: integer
+ *              fechaInicio:
+ *                type: string
+ *                format: date
+ *                nullable: true
+ *              fechaFin:
+ *                type: string
+ *                format: date
+ *                nullable: true
+ *              orden:
+ *                type: integer
+ *              dias:
+ *                type: array
+ *                items:
+ *                  type: object
+ *                  properties:
+ *                    horarioDiaId:
+ *                      type: integer
+ *                    diaId:
+ *                      type: integer
+ *                    diaNombre:
+ *                      type: string
+ *                    orden:
+ *                      type: integer
+ *                    turnos:
+ *                      type: array
+ *                      items:
+ *                        type: object
+ *                        properties:
+ *                          turnoId:
+ *                            type: integer
+ *                          horaInicio:
+ *                            type: string
+ *                          horaFin:
+ *                            type: string
+ *                          extendido:
+ *                            type: boolean
+ *                          diaSalida:
+ *                            type: object
+ *                            nullable: true
+ *                            properties:
+ *                              diaId:
+ *                                type: integer
+ *                              diaNombre:
+ *                                type: string
  */
 export type HorarioDetalle = {
   horarioId: number;
@@ -86,23 +130,13 @@ export type HorarioDetalle = {
   rotativo: boolean;
   regular: boolean;
   horasLaborales: number;
-  dias: {
-    horarioDiaId: number;
-    diaId: number;
-    diaNombre: string;
+  dias: HorarioDetalleDia[];
+  grupos: {
+    vigenciaGrupoId: number;
+    fechaInicio: string | null;
+    fechaFin: string | null;
     orden: number;
-    vigencia: {
-      vigenciaId: number;
-      fechaInicio: string | null;
-      fechaFin: string | null;
-    } | null;
-    turnos: {
-      turnoId: number;
-      horaInicio: string;
-      horaFin: string;
-      extendido: boolean;
-      diaSalida: { diaId: number; diaNombre: string } | null;
-    }[];
+    dias: HorarioDetalleDia[];
   }[];
   usuarios: {
     horarioAsignacionId: number;
@@ -113,5 +147,20 @@ export type HorarioDetalle = {
     apellidos: string;
     fechaInicio: string | null;
     fechaFin: string | null;
+  }[];
+};
+
+type HorarioDetalleDia = {
+  horarioDiaId: number;
+  diaId: number;
+  diaNombre: string;
+  orden: number;
+  vigenciaGrupoId: number | null;
+  turnos: {
+    turnoId: number;
+    horaInicio: string;
+    horaFin: string;
+    extendido: boolean;
+    diaSalida: { diaId: number; diaNombre: string } | null;
   }[];
 };

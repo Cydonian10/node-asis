@@ -9,8 +9,6 @@ import { ActualizarDiaSchema } from './validations/actualizar-dia.validation.js'
 import { CrearTurnoSchema } from './validations/crear-turno.validation.js';
 import { ActualizarTurnoSchema } from './validations/actualizar-turno.validation.js';
 import { CrearDiaConectadoSchema } from './validations/crear-dia-conectado.validation.js';
-import { CrearVigenciaSchema } from './validations/crear-vigencia.validation.js';
-import { ActualizarVigenciaSchema } from './validations/actualizar-vigencia.validation.js';
 import { AsignarUsuariosSchema } from './validations/asignar-usuarios.validation.js';
 
 const getAll = async (req: Request, res: Response) => {
@@ -247,58 +245,6 @@ const removeTurnoDiaConectado = async (req: Request, res: Response) => {
   return res.status(HttpStatusCodes.OK).json(result);
 };
 
-const createVigencia = async (req: Request, res: Response) => {
-  const horarioDiaId = +req.params.diaId;
-  if (!horarioDiaId) {
-    return res
-      .status(HttpStatusCodes.BAD_REQUEST)
-      .json({ message: 'El id debe ser un número válido' });
-  }
-
-  const parsed = CrearVigenciaSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(HttpStatusCodes.BAD_REQUEST).json({
-      message: 'Datos inválidos',
-      errors: formatZodError(parsed.error),
-    });
-  }
-
-  const result = await HorarioService.createVigencia(horarioDiaId, parsed.data);
-  return res.status(HttpStatusCodes.CREATED).json(result);
-};
-
-const updateVigencia = async (req: Request, res: Response) => {
-  const id = +req.params.vigenciaId;
-  if (!id) {
-    return res
-      .status(HttpStatusCodes.BAD_REQUEST)
-      .json({ message: 'El id debe ser un número válido' });
-  }
-
-  const parsed = ActualizarVigenciaSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(HttpStatusCodes.BAD_REQUEST).json({
-      message: 'Datos inválidos',
-      errors: formatZodError(parsed.error),
-    });
-  }
-
-  const result = await HorarioService.updateVigencia(id, parsed.data);
-  return res.status(HttpStatusCodes.OK).json(result);
-};
-
-const removeVigencia = async (req: Request, res: Response) => {
-  const id = +req.params.vigenciaId;
-  if (!id) {
-    return res
-      .status(HttpStatusCodes.BAD_REQUEST)
-      .json({ message: 'El id debe ser un número válido' });
-  }
-
-  const result = await HorarioService.removeVigencia(id);
-  return res.status(HttpStatusCodes.OK).json(result);
-};
-
 const asignarUsuarios = async (req: Request, res: Response) => {
   const id = +req.params.id;
   if (!id) {
@@ -348,9 +294,6 @@ export default {
   getTurnoDiaConectado,
   createTurnoDiaConectado,
   removeTurnoDiaConectado,
-  createVigencia,
-  updateVigencia,
-  removeVigencia,
   asignarUsuarios,
   desasignarUsuario,
 };

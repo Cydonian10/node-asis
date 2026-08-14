@@ -70,11 +70,12 @@ BEGIN
         AND (
             H.Rotativo = 0
             OR EXISTS (
-                SELECT 1 FROM Vigencia V2
-                WHERE V2.HorarioDiaId = HD.HorarioDiaId
-                    AND V2.Eliminado = 0
-                    AND V2.FechaInicio <= @DiaBarrido
-                    AND (V2.FechaFin IS NULL OR V2.FechaFin >= @DiaBarrido)
+                SELECT 1 FROM VigenciaGrupo VG
+                INNER JOIN HorarioDia HD2 ON HD2.VigenciaGrupoId = VG.VigenciaGrupoId
+                WHERE HD2.HorarioDiaId = HD.HorarioDiaId
+                    AND VG.Eliminado = 0
+                    AND VG.FechaInicio <= @DiaBarrido
+                    AND (VG.FechaFin IS NULL OR VG.FechaFin >= @DiaBarrido)
             )
         )
         AND NOT EXISTS (

@@ -15,8 +15,6 @@ import { CrearTurnoDto } from './dto/crear-turno.dto.js';
 import { ActualizarTurnoDto } from './dto/actualizar-turno.dto.js';
 import { CrearDiaConectadoDto } from './dto/crear-dia-conectado.dto.js';
 import { TurnoDiaConectado } from './dto/turno-dia-conectado.dto.js';
-import { CrearVigenciaDto } from './dto/crear-vigencia.dto.js';
-import { ActualizarVigenciaDto } from './dto/actualizar-vigencia.dto.js';
 import { AsignarUsuariosDto } from './dto/asignar-usuarios.dto.js';
 
 const _getAll = (areaId?: number, busqueda?: string): Promise<Horario[]> => {
@@ -113,27 +111,6 @@ const _removeTurnoDiaConectado = (id: number): Promise<OperationResult> => {
   return HorarioRepo.removeTurnoDiaConectado(id, userId);
 };
 
-const _createVigencia = (
-  horarioDiaId: number,
-  data: CrearVigenciaDto,
-): Promise<OperationResultCreate> => {
-  const userId = authService.getUser().id;
-  return HorarioRepo.createVigencia(horarioDiaId, data, userId);
-};
-
-const _updateVigencia = (
-  id: number,
-  data: ActualizarVigenciaDto,
-): Promise<OperationResult> => {
-  const userId = authService.getUser().id;
-  return HorarioRepo.updateVigencia(id, data, userId);
-};
-
-const _removeVigencia = (id: number): Promise<OperationResult> => {
-  const userId = authService.getUser().id;
-  return HorarioRepo.removeVigencia(id, userId);
-};
-
 const _asignarUsuarios = (
   horarioId: number,
   data: AsignarUsuariosDto,
@@ -172,9 +149,6 @@ export const HorarioService = {
   getTurnoDiaConectado: _getTurnoDiaConectado,
   createTurnoDiaConectado: _createTurnoDiaConectado,
   removeTurnoDiaConectado: _removeTurnoDiaConectado,
-  createVigencia: _createVigencia,
-  updateVigencia: _updateVigencia,
-  removeVigencia: _removeVigencia,
   asignarUsuarios: _asignarUsuarios,
   desasignarUsuario: _desasignarUsuario,
 };

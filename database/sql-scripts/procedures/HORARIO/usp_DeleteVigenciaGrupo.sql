@@ -1,15 +1,15 @@
 /*======================================================================================================
-NOMBRE: [dbo].[usp_DeleteHorarioDia]
-FECHA: 05-08-2026
+NOMBRE: [dbo].[usp_DeleteVigenciaGrupo]
+FECHA: 14-08-2026
 AUTOR: Gabriel
-OBJETIVO: Soft-delete en cascada de un HorarioDia: marca Eliminado = 1 en el HorarioDia y en sus
-          Turnos y SalidaTurnoDia asociados.
+OBJETIVO: Soft-delete de un grupo de vigencia: marca Eliminado = 1 en el grupo y en cascada en sus
+          HorarioDia, Turnos y SalidaTurnoDia.
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
-  1  14-08-2026  Gabriel    Quita Vigencia (tabla eliminada); borra SalidaTurnoDia.
+  -     -            -            -
 ======================================================================================================*/
-CREATE OR ALTER PROCEDURE [dbo].[usp_DeleteHorarioDia]
+CREATE OR ALTER PROCEDURE [dbo].[usp_DeleteVigenciaGrupo]
     -- Parametros de entrada
     @ID INT,
     @USER INT,
@@ -23,10 +23,10 @@ BEGIN
     SET NOCOUNT, XACT_ABORT ON;
 
     BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM HorarioDia WHERE HorarioDiaId = @ID AND Eliminado = 0)
+        IF NOT EXISTS (SELECT 1 FROM VigenciaGrupo WHERE VigenciaGrupoId = @ID AND Eliminado = 0)
         BEGIN
             SET @State = -1;
-            SET @Message = 'El dia del horario no existe';
+            SET @Message = 'El grupo de vigencia no existe';
             SET @CodeError = -1;
             RETURN;
         END
@@ -37,23 +37,28 @@ BEGIN
         SET STD.Eliminado = 1, STD.UpdatedAt = GETDATE(), STD.UpdatedBy = @USER
         FROM SalidaTurnoDia STD
         INNER JOIN Turno T ON T.TurnoId = STD.TurnoId
-        WHERE T.HorarioDiaId = @ID AND STD.Eliminado = 0;
+        INNER JOIN HorarioDia HD ON HD.HorarioDiaId = T.HorarioDiaId
+        WHERE HD.VigenciaGrupoId = @ID AND STD.Eliminado = 0;
 
         UPDATE T
         SET T.Eliminado = 1, T.UpdatedAt = GETDATE(), T.UpdatedBy = @USER
         FROM Turno T
-        WHERE T.HorarioDiaId = @ID AND T.Eliminado = 0;
+        INNER JOIN HorarioDia HD ON HD.HorarioDiaId = T.HorarioDiaId
+        WHERE HD.VigenciaGrupoId = @ID AND T.Eliminado = 0;
 
-        UPDATE HorarioDia
-        SET Eliminado = 1,
-            UpdatedAt = GETDATE(),
-            UpdatedBy = @USER
-        WHERE HorarioDiaId = @ID;
+        UPDATE HD
+        SET HD.Eliminado = 1, HD.UpdatedAt = GETDATE(), HD.UpdatedBy = @USER
+        FROM HorarioDia HD
+        WHERE HD.VigenciaGrupoId = @ID AND HD.Eliminado = 0;
+
+        UPDATE VigenciaGrupo
+        SET Eliminado = 1, UpdatedAt = GETDATE(), UpdatedBy = @USER
+        WHERE VigenciaGrupoId = @ID;
 
         COMMIT TRANSACTION;
 
         SET @State = 1;
-        SET @Message = 'Dia del horario eliminado correctamente';
+        SET @Message = 'Grupo de vigencia eliminado correctamente';
         SET @CodeError = 0;
     END TRY
     BEGIN CATCH

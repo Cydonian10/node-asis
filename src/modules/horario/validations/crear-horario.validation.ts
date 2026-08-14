@@ -26,26 +26,27 @@ const DiaInputSchema = z.object({
     .int()
     .min(0, { message: 'orden no puede ser negativo' })
     .optional(),
-  vigencia: z
-    .object({
-      fechaInicio: z
-        .string({ message: 'fechaInicio es requerido' })
-        .regex(/^\d{4}-\d{2}-\d{2}$/, {
-          message: 'fechaInicio debe ser una fecha válida (YYYY-MM-DD)',
-        }),
-      fechaFin: z
-        .string()
-        .regex(/^\d{4}-\d{2}-\d{2}$/, {
-          message: 'fechaFin debe ser una fecha válida (YYYY-MM-DD)',
-        })
-        .nullable()
-        .optional(),
-    })
-    .strict()
-    .optional(),
   turnos: z
     .array(TurnoInputSchema, { message: 'turnos es requerido' })
     .min(1, { message: 'turnos no puede estar vacío' }),
+});
+
+const GrupoVigenciaInputSchema = z.object({
+  fechaInicio: z
+    .string({ message: 'fechaInicio es requerido' })
+    .regex(/^\d{4}-\d{2}-\d{2}$/, {
+      message: 'fechaInicio debe ser una fecha válida (YYYY-MM-DD)',
+    }),
+  fechaFin: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, {
+      message: 'fechaFin debe ser una fecha válida (YYYY-MM-DD)',
+    })
+    .nullable()
+    .optional(),
+  dias: z
+    .array(DiaInputSchema, { message: 'dias es requerido' })
+    .min(1, { message: 'dias no puede estar vacío' }),
 });
 
 /**
@@ -61,7 +62,6 @@ const DiaInputSchema = z.object({
  *        - rotativo
  *        - regular
  *        - horasLaborales
- *        - dias
  *      properties:
  *        nombre:
  *          type: string
@@ -83,7 +83,7 @@ const DiaInputSchema = z.object({
  *          example: 8
  *        dias:
  *          type: array
- *          description: Dias del horario. Si rotativo es true, cada dia debe traer su vigencia.
+ *          description: Dias del horario con sus turnos. Usado cuando rotativo es false.
  *          items:
  *            type: object
  *            properties:
@@ -93,17 +93,6 @@ const DiaInputSchema = z.object({
  *              orden:
  *                type: integer
  *                example: 1
- *              vigencia:
- *                type: object
- *                nullable: true
- *                properties:
- *                  fechaInicio:
- *                    type: string
- *                    format: date
- *                  fechaFin:
- *                    type: string
- *                    format: date
- *                    nullable: true
  *              turnos:
  *                type: array
  *                items:
@@ -117,6 +106,43 @@ const DiaInputSchema = z.object({
  *                      example: "16:00"
  *                    extendido:
  *                      type: boolean
+ *        grupos:
+ *          type: array
+ *          description: Grupos de vigencia del horario. Usado cuando rotativo es true. Cada grupo
+ *                       tiene su rango de fechas y sus propios dias con turnos. Un mismo dia puede
+ *                       repetirse en varios grupos con turnos distintos.
+ *          items:
+ *            type: object
+ *            properties:
+ *              fechaInicio:
+ *                type: string
+ *                format: date
+ *              fechaFin:
+ *                type: string
+ *                format: date
+ *                nullable: true
+ *              dias:
+ *                type: array
+ *                items:
+ *                  type: object
+ *                  properties:
+ *                    diaId:
+ *                      type: integer
+ *                    orden:
+ *                      type: integer
+ *                    turnos:
+ *                      type: array
+ *                      items:
+ *                        type: object
+ *                        properties:
+ *                          horaInicio:
+ *                            type: string
+ *                            example: "08:00"
+ *                          horaFin:
+ *                            type: string
+ *                            example: "16:00"
+ *                          extendido:
+ *                            type: boolean
  *        usuarioIds:
  *          type: array
  *          description: Opcional. Usuarios a asignar al horario al crearlo.
@@ -158,8 +184,11 @@ export const CrearHorarioSchema = z
       .positive({ message: 'horasLaborales debe ser mayor a 0' })
       .default(8),
     dias: z
-      .array(DiaInputSchema, { message: 'dias es requerido' })
-      .min(1, { message: 'dias no puede estar vacío' }),
+      .array(DiaInputSchema, { message: 'dias debe ser un arreglo' })
+      .optional(),
+    grupos: z
+      .array(GrupoVigenciaInputSchema, { message: 'grupos debe ser un arreglo' })
+      .optional(),
     usuarioIds: z
       .array(
         z
@@ -190,15 +219,28 @@ export const CrearHorarioSchema = z
   .strict()
   .superRefine((data, ctx) => {
     if (data.rotativo) {
-      data.dias.forEach((dia, i) => {
-        if (!dia.vigencia) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['dias', i, 'vigencia'],
-            message:
-              'vigencia es requerida en cada dia cuando rotativo es true',
-          });
-        }
+      if (!data.grupos?.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['grupos'],
+          message: 'grupos es requerido cuando rotativo es true',
+        });
+      } else {
+        data.grupos.forEach((grupo, i) => {
+          if (grupo.fechaFin && grupo.fechaFin < grupo.fechaInicio) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ['grupos', i, 'fechaFin'],
+              message: 'fechaFin no puede ser anterior a fechaInicio',
+            });
+          }
+        });
+      }
+    } else if (!data.dias?.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['dias'],
+        message: 'dias es requerido cuando rotativo es false',
       });
     }
 

@@ -29,10 +29,6 @@ router.delete(
   Controller.removeTurnoDiaConectado,
 );
 
-router.post(HorarioPath.CreateVigencia, Controller.createVigencia);
-router.patch(HorarioPath.UpdateVigencia, Controller.updateVigencia);
-router.delete(HorarioPath.DeleteVigencia, Controller.removeVigencia);
-
 router.post(HorarioPath.AsignarUsuarios, Controller.asignarUsuarios);
 router.delete(HorarioPath.DesasignarUsuario, Controller.desasignarUsuario);
 router.get(HorarioPath.GetUsuarios, Controller.getUsuarios);

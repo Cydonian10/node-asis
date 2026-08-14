@@ -93,9 +93,8 @@ BEGIN
         INNER JOIN Horario H ON H.HorarioId = HD.HorarioId
         WHERE H.Nombre LIKE 'Seed %';
 
-        DELETE V FROM Vigencia V
-        INNER JOIN HorarioDia HD ON HD.HorarioDiaId = V.HorarioDiaId
-        INNER JOIN Horario H ON H.HorarioId = HD.HorarioId
+        DELETE VG FROM VigenciaGrupo VG
+        INNER JOIN Horario H ON H.HorarioId = VG.HorarioId
         WHERE H.Nombre LIKE 'Seed %';
 
         DELETE HD FROM HorarioDia HD

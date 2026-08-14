@@ -3,16 +3,17 @@ NOMBRE: [dbo].[usp_CreateHorarioDia]
 FECHA: 05-08-2026
 AUTOR: Gabriel
 OBJETIVO: Crear un dia ligado a un horario (HorarioDia). Valida que el horario y el dia existan.
-          En horarios rotativos un mismo DiaId puede repetirse (una fila por vigencia).
+          En horarios rotativos un mismo DiaId puede repetirse (una fila por grupo de vigencia).
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
- -     -            -            -
+  1  14-08-2026  Gabriel    Parametro VigenciaGrupoId (grupo de vigencia del dia, NULL si no rotativo).
 ======================================================================================================*/
 CREATE OR ALTER PROCEDURE [dbo].[usp_CreateHorarioDia]
     -- Parametros de entrada
     @HorarioId INT,
     @DiaId INT,
+    @VigenciaGrupoId INT = NULL,
     @Orden INT = 0,
     @USER INT,
 
@@ -42,8 +43,20 @@ BEGIN
             RETURN;
         END
 
-        INSERT INTO HorarioDia (HorarioId, DiaId, Orden, Eliminado, CreatedBy, UpdatedBy)
-        VALUES (@HorarioId, @DiaId, @Orden, 0, @USER, @USER);
+        IF @VigenciaGrupoId IS NOT NULL
+            AND NOT EXISTS (
+                SELECT 1 FROM VigenciaGrupo
+                WHERE VigenciaGrupoId = @VigenciaGrupoId AND HorarioId = @HorarioId AND Eliminado = 0
+            )
+        BEGIN
+            SET @State = -1;
+            SET @Message = 'El grupo de vigencia no existe o no pertenece al horario';
+            SET @CodeError = -1;
+            RETURN;
+        END
+
+        INSERT INTO HorarioDia (HorarioId, VigenciaGrupoId, DiaId, Orden, Eliminado, CreatedBy, UpdatedBy)
+        VALUES (@HorarioId, @VigenciaGrupoId, @DiaId, @Orden, 0, @USER, @USER);
 
         SET @Id = SCOPE_IDENTITY();
 

@@ -2,9 +2,9 @@
 NOMBRE: [dbo].[usp_CreateHorario]
 FECHA: 05-08-2026
 AUTOR: Gabriel
-OBJETIVO: Crear un horario plano (nombre, area, flags, horas). Los dias/turnos/vigencias/asignaciones
-          se crean en la misma transaccion Node.js con los SPs CreateHorarioDia/CreateTurno/
-          CreateVigencia/AsignarUsuariosHorario.
+OBJETIVO: Crear un horario plano (nombre, area, flags, horas). Los dias/turnos/grupos de vigencia/
+          asignaciones se crean en la misma transaccion Node.js con los SPs CreateHorarioDia/
+          CreateTurno/CreateVigenciaGrupo/AsignarUsuariosHorario.
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION

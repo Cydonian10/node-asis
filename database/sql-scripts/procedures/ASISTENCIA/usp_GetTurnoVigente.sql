@@ -6,11 +6,13 @@ OBJETIVO: Obtener el turno vigente mas cercano a una hora para (Usuario, Fecha).
           - entrada-match: HorarioDia.DiaId = dia de la semana de @Fecha (el dia del turno).
           - salida-match (solo turnos extendidos): SalidaTurnoDia.DiaId = dia de la semana de @Fecha,
             dentro de una ventana de < 1 semana desde el dia de entrada.
-          Ordena por distancia a @Hora. esEntradaMatch indica si la marca corresponde a la entrada.
+          En horarios rotativos el HorarioDia debe pertenecer a un VigenciaGrupo cuyo rango contenga
+          @Fecha. Ordena por distancia a @Hora. esEntradaMatch indica si la marca corresponde a la
+          entrada.
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
-  -     -            -            -
+  1  14-08-2026  Gabriel    Modelo grupos de vigencia (VigenciaGrupo en vez de Vigencia por dia).
 ======================================================================================================*/
 CREATE OR ALTER PROCEDURE [dbo].[usp_GetTurnoVigente]
     @UsuarioId INT,
@@ -34,9 +36,9 @@ BEGIN
         T.Extendido AS extendido,
         HD.DiaId AS diaIdEntrada,
         STD.DiaId AS salidaDiaId,
-        V.VigenciaId AS vigenciaId,
-        V.FechaInicio AS fechaInicio,
-        V.FechaFin AS fechaFin,
+        VG.VigenciaGrupoId AS vigenciaGrupoId,
+        VG.FechaInicio AS fechaInicio,
+        VG.FechaFin AS fechaFin,
         CASE WHEN HD.DiaId = @DiaSemana THEN 1 ELSE 0 END AS esEntradaMatch,
         ABS(DATEDIFF(MINUTE,
             CASE WHEN HD.DiaId = @DiaSemana THEN T.HoraInicio ELSE T.HoraFin END,
@@ -47,8 +49,8 @@ BEGIN
     INNER JOIN HorarioDia HD ON HD.HorarioId = H.HorarioId AND HD.Eliminado = 0
     INNER JOIN Turno T ON T.HorarioDiaId = HD.HorarioDiaId AND T.Eliminado = 0
     LEFT JOIN SalidaTurnoDia STD ON STD.TurnoId = T.TurnoId AND STD.Eliminado = 0
-    LEFT JOIN Vigencia V ON V.HorarioDiaId = HD.HorarioDiaId AND V.Eliminado = 0
-        AND V.FechaInicio <= @Fecha AND (V.FechaFin IS NULL OR V.FechaFin >= @Fecha)
+    LEFT JOIN VigenciaGrupo VG ON VG.VigenciaGrupoId = HD.VigenciaGrupoId AND VG.Eliminado = 0
+        AND VG.FechaInicio <= @Fecha AND (VG.FechaFin IS NULL OR VG.FechaFin >= @Fecha)
     WHERE HA.UsuarioId = @UsuarioId
         AND HA.Eliminado = 0
         AND HA.FechaInicio <= @Fecha
@@ -59,13 +61,7 @@ BEGIN
         )
         AND (
             H.Rotativo = 0
-            OR EXISTS (
-                SELECT 1 FROM Vigencia V2
-                WHERE V2.HorarioDiaId = HD.HorarioDiaId
-                    AND V2.Eliminado = 0
-                    AND V2.FechaInicio <= @Fecha
-                    AND (V2.FechaFin IS NULL OR V2.FechaFin >= @Fecha)
-            )
+            OR VG.VigenciaGrupoId IS NOT NULL
         )
     ORDER BY distancia ASC, T.TurnoId ASC;
 END

@@ -29,7 +29,7 @@ type TurnoVigenteRow = {
   extendido: boolean;
   diaIdEntrada: number;
   salidaDiaId: number | null;
-  vigenciaId: number | null;
+  vigenciaGrupoId: number | null;
   fechaInicio: string | Date | null;
   fechaFin: string | Date | null;
   esEntradaMatch: boolean;

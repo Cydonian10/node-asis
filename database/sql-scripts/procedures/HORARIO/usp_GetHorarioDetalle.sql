@@ -2,9 +2,9 @@
 NOMBRE: [dbo].[usp_GetHorarioDetalle]
 FECHA: 05-08-2026
 AUTOR: Gabriel
-OBJETIVO: Retornar el horario con todos sus dias (HorarioDia), turnos y vigencia anidados, listo
-          para dibujar en el front. Devuelve tres resultsets: horario (1 fila), dias (con turnos y
-          vigencia en una sola fila por turno con NULLs para vigencia cuando no aplica).
+OBJETIVO: Retornar el horario con sus grupos de vigencia (rotativo), dias y turnos anidados, listo
+          para dibujar en el front. Devuelve cuatro resultsets: horario (1 fila), dias, dias con
+          turnos, y grupos de vigencia.
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
@@ -51,23 +51,32 @@ BEGIN
         HD.DiaId AS diaId,
         D.Nombre AS diaNombre,
         HD.Orden AS orden,
+        HD.VigenciaGrupoId AS vigenciaGrupoId,
         T.TurnoId AS turnoId,
         T.HoraInicio AS horaInicio,
         T.HoraFin AS horaFin,
         T.Extendido AS extendido,
         SD.DiaId AS salidaDiaId,
-        SD.Nombre AS salidaDiaNombre,
-        V.VigenciaId AS vigenciaId,
-        V.FechaInicio AS fechaInicio,
-        V.FechaFin AS fechaFin
+        SD.Nombre AS salidaDiaNombre
     FROM HorarioDia HD
     INNER JOIN Dia D ON D.DiaId = HD.DiaId
     LEFT JOIN Turno T ON T.HorarioDiaId = HD.HorarioDiaId AND T.Eliminado = 0
     LEFT JOIN SalidaTurnoDia STD ON STD.TurnoId = T.TurnoId AND STD.Eliminado = 0
     LEFT JOIN Dia SD ON SD.DiaId = STD.DiaId
-    LEFT JOIN Vigencia V ON V.HorarioDiaId = HD.HorarioDiaId AND V.Eliminado = 0
     WHERE HD.HorarioId = @HorarioId
         AND HD.Eliminado = 0
     ORDER BY HD.Orden;
+
+    -- Grupos de vigencia del horario (rotativo)
+    SELECT
+        VG.VigenciaGrupoId AS vigenciaGrupoId,
+        VG.HorarioId AS horarioId,
+        VG.FechaInicio AS fechaInicio,
+        VG.FechaFin AS fechaFin,
+        VG.Orden AS orden
+    FROM VigenciaGrupo VG
+    WHERE VG.HorarioId = @HorarioId
+        AND VG.Eliminado = 0
+    ORDER BY VG.Orden;
 END
 GO
