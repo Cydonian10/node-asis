@@ -28,6 +28,7 @@ import { CrearDiaConectadoDto } from './dto/crear-dia-conectado.dto.js';
 import { TurnoDiaConectado } from './dto/turno-dia-conectado.dto.js';
 import { mapHorarioDetalle } from './mapper/horario.mapper.js';
 import logger from '@src/common/logger.js';
+import { LuxonAdapter } from '@src/common/plugins/luxon.js';
 
 export function normalizeSqlTime(
   value: string | null | undefined,
@@ -46,7 +47,7 @@ export function normalizeSqlTime(
     throw new Error('La hora no es válida');
   }
 
-  return new Date(1970, 0, 1, hours, minutes, seconds, 0);
+  return new Date(Date.UTC(1970, 0, 1, hours, minutes, seconds, 0));
 }
 
 const getAll = async (
@@ -92,7 +93,11 @@ const getUsuarios = async (horarioId: number): Promise<UsuarioHorario[]> => {
     const result = await request.execute<UsuarioHorario>(
       'usp_GetHorarioUsuarios',
     );
-    return result.recordset;
+    return (result.recordset ?? []).map((row) => ({
+      ...row,
+      fechaInicio: LuxonAdapter.fromSqlServerDate(row.fechaInicio),
+      fechaFin: LuxonAdapter.fromSqlServerDate(row.fechaFin),
+    }));
   } catch (error) {
     return ErrorUtil.select(error as string);
   }
@@ -163,11 +168,15 @@ const create = async (
             'usp_CreateVigenciaGrupo',
             (req) => {
               req.input('HorarioId', sql.Int, horarioId);
-              req.input('FechaInicio', sql.Date, new Date(grupo.fechaInicio));
+              req.input(
+                'FechaInicio',
+                sql.Date,
+                LuxonAdapter.toSqlServerDate(grupo.fechaInicio),
+              );
               req.input(
                 'FechaFin',
                 sql.Date,
-                grupo.fechaFin ? new Date(grupo.fechaFin) : null,
+                LuxonAdapter.toSqlServerDate(grupo.fechaFin),
               );
               req.input('Orden', sql.Int, gi + 1);
               req.input('USER', sql.Int, userId);
@@ -200,11 +209,15 @@ const create = async (
           tvp.rows.add(id);
         }
         req.input('UsuarioIds', sql.TVP, tvp);
-        req.input('FechaInicio', sql.Date, new Date(data.fechaInicio!));
+        req.input(
+          'FechaInicio',
+          sql.Date,
+          LuxonAdapter.toSqlServerDate(data.fechaInicio),
+        );
         req.input(
           'FechaFin',
           sql.Date,
-          data.fechaFin ? new Date(data.fechaFin) : null,
+          LuxonAdapter.toSqlServerDate(data.fechaFin),
         );
         req.input('USER', sql.Int, userId);
         req.output('State', sql.Int);
@@ -518,8 +531,16 @@ const asignarUsuarios = async (
       tvp.rows.add(id);
     }
     request.input('UsuarioIds', sql.TVP, tvp);
-    request.input('FechaInicio', sql.Date, new Date(fechaInicio));
-    request.input('FechaFin', sql.Date, fechaFin ? new Date(fechaFin) : null);
+    request.input(
+      'FechaInicio',
+      sql.Date,
+      LuxonAdapter.toSqlServerDate(fechaInicio),
+    );
+    request.input(
+      'FechaFin',
+      sql.Date,
+      LuxonAdapter.toSqlServerDate(fechaFin),
+    );
 
     request.input('USER', sql.Int, userId);
 

@@ -5,16 +5,16 @@ describe('normalizeSqlTime', () => {
   it('convierte HH:mm al formato aceptado por mssql TIME', () => {
     const result = normalizeSqlTime('08:00');
     expect(result).toBeInstanceOf(Date);
-    expect(result?.getHours()).toBe(8);
-    expect(result?.getMinutes()).toBe(0);
-    expect(result?.getSeconds()).toBe(0);
+    expect(result?.getUTCHours()).toBe(8);
+    expect(result?.getUTCMinutes()).toBe(0);
+    expect(result?.getUTCSeconds()).toBe(0);
   });
 
   it('conserva HH:mm:ss', () => {
     const result = normalizeSqlTime('23:59:45');
-    expect(result?.getHours()).toBe(23);
-    expect(result?.getMinutes()).toBe(59);
-    expect(result?.getSeconds()).toBe(45);
+    expect(result?.getUTCHours()).toBe(23);
+    expect(result?.getUTCMinutes()).toBe(59);
+    expect(result?.getUTCSeconds()).toBe(45);
   });
 
   it('acepta null y undefined para PATCH parcial', () => {

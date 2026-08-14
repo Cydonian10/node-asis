@@ -1,4 +1,5 @@
 import { HorarioDetalle } from '../dto/horario-detalle.dto.js';
+import { LuxonAdapter } from '@src/common/plugins/luxon.js';
 
 type DetalleRow = {
   horarioDiaId: number;
@@ -7,8 +8,8 @@ type DetalleRow = {
   orden: number;
   vigenciaGrupoId: number | null;
   turnoId: number | null;
-  horaInicio: string | null;
-  horaFin: string | null;
+  horaInicio: Date | string | null;
+  horaFin: Date | string | null;
   extendido: boolean | null;
   salidaDiaId: number | null;
   salidaDiaNombre: string | null;
@@ -17,8 +18,8 @@ type DetalleRow = {
 type GrupoRow = {
   vigenciaGrupoId: number;
   horarioId: number;
-  fechaInicio: string | null;
-  fechaFin: string | null;
+  fechaInicio: Date | string | null;
+  fechaFin: Date | string | null;
   orden: number;
 };
 
@@ -68,8 +69,8 @@ export function mapHorarioDetalle(
     if (fila.turnoId !== null && fila.turnoId !== undefined) {
       dia.turnos.push({
         turnoId: fila.turnoId,
-        horaInicio: fila.horaInicio ?? '',
-        horaFin: fila.horaFin ?? '',
+        horaInicio: LuxonAdapter.fromSqlServerTime(fila.horaInicio),
+        horaFin: LuxonAdapter.fromSqlServerTime(fila.horaFin),
         extendido: !!fila.extendido,
         diaSalida:
           fila.salidaDiaId !== null && fila.salidaDiaId !== undefined
@@ -92,8 +93,8 @@ export function mapHorarioDetalle(
     for (const g of gruposRows) {
       gruposMap.set(g.vigenciaGrupoId, {
         vigenciaGrupoId: g.vigenciaGrupoId,
-        fechaInicio: g.fechaInicio,
-        fechaFin: g.fechaFin,
+        fechaInicio: LuxonAdapter.fromSqlServerDate(g.fechaInicio),
+        fechaFin: LuxonAdapter.fromSqlServerDate(g.fechaFin),
         orden: g.orden,
         dias: [],
       });
