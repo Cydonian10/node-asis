@@ -14,6 +14,11 @@ const TurnoInputSchema = z.object({
   extendido: z
     .boolean({ message: 'extendido debe ser un booleano' })
     .optional(),
+  diaSalidaId: z
+    .number({ message: 'diaSalidaId debe ser un número' })
+    .int({ message: 'diaSalidaId debe ser un entero' })
+    .positive({ message: 'diaSalidaId debe ser mayor a 0' })
+    .optional(),
 });
 
 const DiaInputSchema = z.object({
@@ -95,17 +100,21 @@ const GrupoVigenciaInputSchema = z.object({
  *                example: 1
  *              turnos:
  *                type: array
- *                items:
- *                  type: object
- *                  properties:
- *                    horaInicio:
- *                      type: string
- *                      example: "08:00"
- *                    horaFin:
- *                      type: string
- *                      example: "16:00"
- *                    extendido:
- *                      type: boolean
+*                items:
+*                  type: object
+*                  properties:
+*                    horaInicio:
+*                      type: string
+*                      example: "08:00"
+*                    horaFin:
+*                      type: string
+*                      example: "16:00"
+*                    extendido:
+*                      type: boolean
+*                    diaSalidaId:
+*                      type: integer
+*                      description: Dia (DiaId maestro) al que sale el turno si es extendido.
+*                      example: 2
  *        grupos:
  *          type: array
  *          description: Grupos de vigencia del horario. Usado cuando rotativo es true. Cada grupo
@@ -130,19 +139,23 @@ const GrupoVigenciaInputSchema = z.object({
  *                      type: integer
  *                    orden:
  *                      type: integer
- *                    turnos:
- *                      type: array
- *                      items:
- *                        type: object
- *                        properties:
- *                          horaInicio:
- *                            type: string
- *                            example: "08:00"
- *                          horaFin:
- *                            type: string
- *                            example: "16:00"
- *                          extendido:
- *                            type: boolean
+*                    turnos:
+*                      type: array
+*                      items:
+*                        type: object
+*                        properties:
+*                          horaInicio:
+*                            type: string
+*                            example: "08:00"
+*                          horaFin:
+*                            type: string
+*                            example: "16:00"
+*                          extendido:
+*                            type: boolean
+*                          diaSalidaId:
+*                            type: integer
+*                            description: Dia (DiaId maestro) al que sale el turno si es extendido.
+*                            example: 2
  *        usuarioIds:
  *          type: array
  *          description: Opcional. Usuarios a asignar al horario al crearlo.

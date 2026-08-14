@@ -122,7 +122,7 @@ const crearDiasHorario = async (
     const horarioDiaId = requireCreatedId(diaOutput, 'usp_CreateHorarioDia');
 
     for (const turno of dia.turnos) {
-      await executeCreate(tx, 'usp_CreateTurno', (req) => {
+      const turnoOutput = await executeCreate(tx, 'usp_CreateTurno', (req) => {
         req.input('HorarioDiaId', sql.Int, horarioDiaId);
         req.input(
           'HoraInicio',
@@ -134,6 +134,16 @@ const crearDiasHorario = async (
         req.input('USER', sql.Int, userId);
         req.output('Id', sql.Int);
       });
+      const turnoId = requireCreatedId(turnoOutput, 'usp_CreateTurno');
+
+      if (turno.diaSalidaId) {
+        await executeCreate(tx, 'usp_CreateTurnoDiaConectado', (req) => {
+          req.input('TurnoId', sql.Int, turnoId);
+          req.input('DiaId', sql.Int, turno.diaSalidaId);
+          req.input('USER', sql.Int, userId);
+          req.output('Id', sql.Int);
+        });
+      }
     }
   }
 };
