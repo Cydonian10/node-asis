@@ -50,7 +50,6 @@
     "nodemailer": "^6.9.15",
     "pdfmake": "^0.2.20",
     "pg": "^8.16.2",
-    "puppeteer": "^22.13.1",
     "rimraf": "^6.0.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
