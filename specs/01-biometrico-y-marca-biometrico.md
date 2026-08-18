@@ -1,6 +1,6 @@
 # SPEC 01 — Módulo Biometrico y Marca Biometrico con CRUD completo
 
-> **Status:** Aprobado
+> **Status:** Implementado
 > **Depends on:** Ninguno
 > **Date:** 2026-08-18
 > **Objective:** Crear dos módulos CRUD completos (`biometrico` y `marca-biometrico`) con validaciones Zod, DTOs, documentación Swagger, procedimientos almacenados SQL y corrección del esquema de tablas existente.
@@ -104,22 +104,22 @@ CREATE TABLE Biometrico
 
 ## Acceptance criteria
 
-- [ ] `database/tables/tablas.sql` corrige las comas entre `Tarjeta`, `Huella` y `Rostro` en `Biometrico`.
-- [ ] `MarcaBiometrico.Nombre` tiene restricción `UNIQUE`.
-- [ ] Procedimientos SQL creados en carpetas separadas por entidad.
-- [ ] Módulo `marca-biometrico` expone rutas `POST /`, `GET /`, `GET /:id`, `PUT /:id`, `DELETE /:id` en `/marca-biometrico`.
-- [ ] Módulo `biometrico` expone rutas `POST /`, `GET /`, `GET /:id`, `PUT /:id`, `DELETE /:id` en `/biometrico`.
-- [ ] Validaciones Zod usan `z.object(...).strict()` para cada operación.
-- [ ] DTOs de operación derivan de schemas con `z.infer`.
-- [ ] DTOs de respuesta son tipos sin Zod en archivos separados.
-- [ ] `paths.ts` documenta cada endpoint con JSDoc `@swagger`.
-- [ ] DELETE es lógico (`Eliminado = 1`) en ambas entidades.
-- [ ] GET de listado excluye registros con `Eliminado = 1`.
-- [ ] Auditoría toma el usuario autenticado del request.
-- [ ] FK de `Biometrico.MarcaBiometricoId` es obligatoria y valida existencia de marca.
-- [ ] Pruebas unitarias pasan.
-- [ ] Pruebas E2E pasan.
-- [ ] `npm run build` pasa sin errores.
+- [x] `database/tables/tablas.sql` corrige las comas entre `Tarjeta`, `Huella` y `Rostro` en `Biometrico`.
+- [x] `MarcaBiometrico.Nombre` tiene restricción `UNIQUE`.
+- [x] Procedimientos SQL creados en carpetas separadas por entidad.
+- [x] Módulo `marca-biometrico` expone rutas `POST /`, `GET /`, `GET /:id`, `PUT /:id`, `DELETE /:id` en `/marca-biometrico`.
+- [x] Módulo `biometrico` expone rutas `POST /`, `GET /`, `GET /:id`, `PUT /:id`, `DELETE /:id` en `/biometrico`.
+- [x] Validaciones Zod usan `z.object(...).strict()` para cada operación.
+- [x] DTOs de operación derivan de schemas con `z.infer`.
+- [x] DTOs de respuesta son tipos sin Zod en archivos separados.
+- [x] `paths.ts` documenta cada endpoint con JSDoc `@swagger`.
+- [x] DELETE es lógico (`Eliminado = 1`) en ambas entidades.
+- [x] GET de listado excluye registros con `Eliminado = 1`.
+- [x] Auditoría toma el usuario autenticado del request.
+- [x] FK de `Biometrico.MarcaBiometricoId` es obligatoria y valida existencia de marca.
+- [x] Pruebas unitarias pasan.
+- [x] Pruebas E2E pasan.
+- [x] `npm run build` pasa sin errores.
 
 ---
 
