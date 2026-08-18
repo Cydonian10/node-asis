@@ -425,9 +425,10 @@ CREATE TABLE Asistencia
 CREATE TABLE MarcaBiometrico
 (
     MarcaBiometricoId INT IDENTITY(1,1) PRIMARY KEY,
-    FechaHora DATETIME2,
-    Tipo VARCHAR(20),
-    Origen VARCHAR(50),
+    Nombre VARCHAR(30),
+    TipoDB VARCHAR(20),
+    Detalle VARCHAR(50),
+    Eliminado BIT DEFAULT 0,
     CreatedBy INT NOT NULL,
     UpdatedBy INT NULL,
     CreatedAt DATETIME2 DEFAULT GETDATE(),
@@ -438,8 +439,14 @@ CREATE TABLE Biometrico
 (
     BiometricoId INT IDENTITY(1,1) PRIMARY KEY,
     MarcaBiometricoId INT,
-    Tipo VARCHAR(50),
-    Valor VARBINARY(MAX),
+    Nombre VARCHAR(40),
+    Ip VARCHAR(20),
+    Serie VARCHAR(20),
+    Ubicacion VARCHAR(50),
+    Tarjeta BIT
+    Huella BIT
+    Rostro BIT
+    Eliminado BIT DEFAULT 0,
     FOREIGN KEY (MarcaBiometricoId) REFERENCES MarcaBiometrico(MarcaBiometricoId),
     CreatedBy INT NOT NULL,
     UpdatedBy INT NULL,
