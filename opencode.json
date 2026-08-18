@@ -7,7 +7,7 @@
       "enabled": true,
       "environment": {
         "SQLSERVER_HOST": "localhost",
-        "SQLSERVER_PORT": "1433",
+        "SQLSERVER_PORT": "1438",
         "SQLSERVER_USER": "sa",
         "SQLSERVER_PASSWORD": "Desser2bdtest",
         "SQLSERVER_DATABASE": "API_SCAP_DB",
