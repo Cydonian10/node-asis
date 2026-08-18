@@ -425,27 +425,28 @@ CREATE TABLE Asistencia
 CREATE TABLE MarcaBiometrico
 (
     MarcaBiometricoId INT IDENTITY(1,1) PRIMARY KEY,
-    Nombre VARCHAR(30),
-    TipoDB VARCHAR(20),
-    Detalle VARCHAR(50),
+    Nombre VARCHAR(30) NOT NULL,
+    TipoDB VARCHAR(20) NOT NULL,
+    Detalle VARCHAR(50) NOT NULL,
     Eliminado BIT DEFAULT 0,
     CreatedBy INT NOT NULL,
     UpdatedBy INT NULL,
     CreatedAt DATETIME2 DEFAULT GETDATE(),
-    UpdatedAt DATETIME2 DEFAULT GETDATE()
+    UpdatedAt DATETIME2 DEFAULT GETDATE(),
+    CONSTRAINT UQ_MarcaBiometrico_Nombre UNIQUE (Nombre)
 );
 
 CREATE TABLE Biometrico
 (
     BiometricoId INT IDENTITY(1,1) PRIMARY KEY,
-    MarcaBiometricoId INT,
-    Nombre VARCHAR(40),
-    Ip VARCHAR(20),
-    Serie VARCHAR(20),
-    Ubicacion VARCHAR(50),
-    Tarjeta BIT
-    Huella BIT
-    Rostro BIT
+    MarcaBiometricoId INT NOT NULL,
+    Nombre VARCHAR(40) NOT NULL,
+    Ip VARCHAR(20) NOT NULL,
+    Serie VARCHAR(20) NOT NULL,
+    Ubicacion VARCHAR(50) NOT NULL,
+    Tarjeta BIT NOT NULL,
+    Huella BIT NOT NULL,
+    Rostro BIT NOT NULL,
     Eliminado BIT DEFAULT 0,
     FOREIGN KEY (MarcaBiometricoId) REFERENCES MarcaBiometrico(MarcaBiometricoId),
     CreatedBy INT NOT NULL,

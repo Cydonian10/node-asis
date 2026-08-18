@@ -1,6 +1,6 @@
 # SPEC 01 — Módulo Biometrico y Marca Biometrico con CRUD completo
 
-> **Status:** Draft
+> **Status:** Aprobado
 > **Depends on:** Ninguno
 > **Date:** 2026-08-18
 > **Objective:** Crear dos módulos CRUD completos (`biometrico` y `marca-biometrico`) con validaciones Zod, DTOs, documentación Swagger, procedimientos almacenados SQL y corrección del esquema de tablas existente.
@@ -139,11 +139,11 @@ CREATE TABLE Biometrico
 
 ## Risks
 
-| Risk | Mitigation |
-|------|------------|
-| `tablas.sql` corrupto por comas faltantes | Corregir en paso 1 del plan antes de cualquier otro cambio |
-| SP falla al validar FK inexistente | Validar en SP que `MarcaBiometricoId` exista antes de insertar |
-| Nombre duplicado en `MarcaBiometrico` | SP valida unicidad y retorna error claro si falla |
+| Risk                                      | Mitigation                                                     |
+| ----------------------------------------- | -------------------------------------------------------------- |
+| `tablas.sql` corrupto por comas faltantes | Corregir en paso 1 del plan antes de cualquier otro cambio     |
+| SP falla al validar FK inexistente        | Validar en SP que `MarcaBiometricoId` exista antes de insertar |
+| Nombre duplicado en `MarcaBiometrico`     | SP valida unicidad y retorna error claro si falla              |
 
 ---
 
