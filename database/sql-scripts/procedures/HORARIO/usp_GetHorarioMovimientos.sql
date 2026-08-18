@@ -9,8 +9,8 @@ OBJETIVO: Retornar el estado de "movimientos" de un horario para validar edicion
                sus horas, dia de salida ni eliminarse). Las licencias se validan por fechas
                del usuario, no por turno.
             - EstadoMovimientos: flags de movimientos del horario (asistencias, turnos modificados,
-              licencias, permisos, justificaciones, vacaciones de usuarios asignados) y el flag
-              estructuraBloqueada (cualquier movimiento => no se pueden agregar dias/grupos).
+               permisos y justificaciones ligados a turnos del horario) y el flag
+               estructuraBloqueada (cualquier movimiento => no se pueden agregar dias/grupos).
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
@@ -60,28 +60,18 @@ BEGIN
         ) THEN 1 ELSE 0 END AS tieneTurnosModificados,
         CASE WHEN EXISTS (
             SELECT 1
-            FROM HorarioAsignacion HA
-            INNER JOIN Licencia L ON L.UsuarioId = HA.UsuarioId
-            WHERE HA.HorarioId = @HorarioId AND HA.Eliminado = 0
-        ) THEN 1 ELSE 0 END AS tieneLicencias,
-        CASE WHEN EXISTS (
-            SELECT 1
-            FROM HorarioAsignacion HA
-            INNER JOIN Permisos P ON P.UsuarioId = HA.UsuarioId
-            WHERE HA.HorarioId = @HorarioId AND HA.Eliminado = 0
+            FROM Permisos P
+            INNER JOIN Turno T ON T.TurnoId = P.TurnoId
+            INNER JOIN HorarioDia HD ON HD.HorarioDiaId = T.HorarioDiaId
+            WHERE HD.HorarioId = @HorarioId AND T.Eliminado = 0 AND HD.Eliminado = 0
         ) THEN 1 ELSE 0 END AS tienePermisos,
         CASE WHEN EXISTS (
             SELECT 1
-            FROM HorarioAsignacion HA
-            INNER JOIN Justificaciones J ON J.UsuarioId = HA.UsuarioId
-            WHERE HA.HorarioId = @HorarioId AND HA.Eliminado = 0
-        ) THEN 1 ELSE 0 END AS tieneJustificaciones,
-        CASE WHEN EXISTS (
-            SELECT 1
-            FROM HorarioAsignacion HA
-            INNER JOIN Vacaciones V ON V.UsuarioId = HA.UsuarioId
-            WHERE HA.HorarioId = @HorarioId AND HA.Eliminado = 0 AND V.Eliminado = 0
-        ) THEN 1 ELSE 0 END AS tieneVacaciones
+            FROM Justificaciones J
+            INNER JOIN Turno T ON T.TurnoId = J.TurnoId
+            INNER JOIN HorarioDia HD ON HD.HorarioDiaId = T.HorarioDiaId
+            WHERE HD.HorarioId = @HorarioId AND T.Eliminado = 0 AND HD.Eliminado = 0
+        ) THEN 1 ELSE 0 END AS tieneJustificaciones
     FROM (SELECT 1 AS dummy) AS d;
 END
 GO

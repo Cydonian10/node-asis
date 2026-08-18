@@ -114,9 +114,7 @@ const ejecutarMovimientos = async (
   const estructuraBloqueada = [
     estado.tieneAsistencias,
     estado.tieneTurnosModificados,
-    estado.tieneLicencias,
     estado.tienePermisos,
-    estado.tieneVacaciones,
     estado.tieneJustificaciones,
   ].some((value) => !!value);
   return {
@@ -124,9 +122,7 @@ const ejecutarMovimientos = async (
     estructuraBloqueada,
     tieneAsistencias: !!estado.tieneAsistencias,
     tieneTurnosModificados: !!estado.tieneTurnosModificados,
-    tieneLicencias: !!estado.tieneLicencias,
     tienePermisos: !!estado.tienePermisos,
-    tieneVacaciones: !!estado.tieneVacaciones,
     tieneJustificaciones: !!estado.tieneJustificaciones,
   };
 };
@@ -439,6 +435,27 @@ const hayCambioEstructural = (
     return true;
   }
 
+  // Campos generales: con estructura bloqueada solo el nombre es editable
+  if ((data.areaId ?? detalle.areaId) !== detalle.areaId) {
+    return true;
+  }
+  if ((data.extendido ?? detalle.extendido) !== detalle.extendido) {
+    return true;
+  }
+  if ((data.regular ?? detalle.regular) !== detalle.regular) {
+    return true;
+  }
+  if (
+    (data.horasLaborales ?? detalle.horasLaborales) !== detalle.horasLaborales
+  ) {
+    return true;
+  }
+
+  // Sin estructura en el payload no hay cambios estructurales
+  if (!data.dias && !data.grupos) {
+    return false;
+  }
+
   // Estructura actual
   const turnosActuales = new Map<
     number,
@@ -582,16 +599,19 @@ const hayCambioEstructural = (
   return false;
 };
 
+const MENSAJE_ESTRUCTURA_BLOQUEADA =
+  'La estructura de este horario está bloqueada porque tiene turnos con movimientos (asistencias, permisos o justificaciones). Solo puedes editar el nombre del horario.';
+
 const validarCambiosHorario = (
   detalle: HorarioDetalle,
   data: ActualizarHorarioDto,
-  turnosBloqueados: Set<number>,
+  estructuraBloqueada: boolean,
 ): string | null => {
-  if (turnosBloqueados.size === 0) {
+  if (!estructuraBloqueada) {
     return null;
   }
   if (hayCambioEstructural(detalle, data)) {
-    return 'No se puede modificar la estructura del horario porque tiene turnos con movimientos (asistencias o turnos modificados). Solo puedes editar los datos generales (nombre, horas laborales y área).';
+    return MENSAJE_ESTRUCTURA_BLOQUEADA;
   }
   return null;
 };
@@ -768,13 +788,16 @@ const update = async (
       }
 
       const movimientos = await ejecutarMovimientos(new sql.Request(tx), id);
-      const turnosBloqueados = new Set(movimientos.turnosBloqueados);
       const rotativoPropuesto = data.rotativo ?? detalle.rotativo;
       const tipoCambia =
         data.rotativo !== undefined && data.rotativo !== detalle.rotativo;
 
-      if (data.dias || data.grupos) {
-        const error = validarCambiosHorario(detalle, data, turnosBloqueados);
+      if (movimientos.estructuraBloqueada) {
+        const error = validarCambiosHorario(
+          detalle,
+          data,
+          movimientos.estructuraBloqueada,
+        );
         if (error) {
           return { State: -1, Message: error, CodeError: -1 };
         }
@@ -887,6 +910,19 @@ const createDia = async (
 ): Promise<OperationResultCreate> => {
   try {
     return await runTransaction(async (tx) => {
+      const movimientos = await ejecutarMovimientos(
+        new sql.Request(tx),
+        horarioId,
+      );
+      if (movimientos.estructuraBloqueada) {
+        return {
+          State: -1,
+          Message: MENSAJE_ESTRUCTURA_BLOQUEADA,
+          CodeError: -1,
+          Id: 0,
+        };
+      }
+
       const diaOutput = await executeCreate(
         tx,
         'usp_CreateHorarioDia',
@@ -966,6 +1002,38 @@ const createTurno = async (
 ): Promise<OperationResultCreate> => {
   try {
     const pool = await connectToDb();
+
+    const horarioResult = await pool
+      .request()
+      .input('HorarioDiaId', sql.Int, horarioDiaId)
+      .query(
+        'SELECT HorarioId FROM HorarioDia WHERE HorarioDiaId = @HorarioDiaId AND Eliminado = 0',
+      );
+    const horarioId = horarioResult.recordset[0]?.HorarioId as
+      | number
+      | undefined;
+    if (!horarioId) {
+      return {
+        State: -1,
+        Message: 'El día del horario no existe',
+        CodeError: -1,
+        Id: 0,
+      };
+    }
+
+    const movimientos = await ejecutarMovimientos(
+      new sql.Request(pool),
+      horarioId,
+    );
+    if (movimientos.estructuraBloqueada) {
+      return {
+        State: -1,
+        Message: MENSAJE_ESTRUCTURA_BLOQUEADA,
+        CodeError: -1,
+        Id: 0,
+      };
+    }
+
     const request = pool.request();
 
     request.input('HorarioDiaId', sql.Int, horarioDiaId);

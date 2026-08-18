@@ -3,15 +3,16 @@ NOMBRE: [dbo].[usp_DeleteHorario]
 FECHA: 05-08-2026
 AUTOR: Gabriel
 OBJETIVO: Soft-delete en cascada de un horario: marca Eliminado = 1 en Horario, HorarioDia, Turno,
-          VigenciaGrupo y HorarioAsignacion. Verifica restricciones: no debe haber asistencias (via
-          Asistencia.turnoId -> Turno -> HorarioDia) ni vacaciones de usuarios asignados al horario
-          (esas tablas no tienen flag Eliminado, cuentan todas).
+          VigenciaGrupo y HorarioAsignacion. Verifica restricciones: no debe haber movimientos
+          (asistencias, turnos modificados, permisos o justificaciones) ligados a turnos del horario.
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
   1  13-08-2026  Gabriel    Fix: Asistencia via turnoId->Turno->HorarioDia (no existe Asistencia.HorarioId);
                              Vacaciones via HorarioAsignacion (no existe relacion directa).
   2  14-08-2026  Gabriel    Soft-delete de VigenciaGrupo (modelo grupos de vigencia).
+  3  18-08-2026  Gabriel    Quita check de vacaciones; agrega turnos modificados, permisos y
+                             justificaciones por cadena de turnos.
 ======================================================================================================*/
 CREATE OR ALTER PROCEDURE [dbo].[usp_DeleteHorario]
     -- Parametros de entrada
@@ -51,13 +52,43 @@ BEGIN
 
         IF EXISTS (
             SELECT 1
-            FROM Vacaciones V
-            INNER JOIN HorarioAsignacion HA ON HA.UsuarioId = V.UsuarioId
-            WHERE HA.HorarioId = @ID AND HA.Eliminado = 0
+            FROM TurnoModificado TM
+            INNER JOIN Turno T ON T.TurnoId = TM.TurnoId
+            INNER JOIN HorarioDia HD ON HD.HorarioDiaId = T.HorarioDiaId
+            WHERE HD.HorarioId = @ID AND T.Eliminado = 0 AND HD.Eliminado = 0
+                AND TM.Eliminado = 0
         )
         BEGIN
             SET @State = -1;
-            SET @Message = 'No se puede eliminar el horario porque tiene vacaciones asociadas (Vacaciones)';
+            SET @Message = 'No se puede eliminar el horario porque tiene turnos modificados asociados';
+            SET @CodeError = -1;
+            RETURN;
+        END
+
+        IF EXISTS (
+            SELECT 1
+            FROM Permisos P
+            INNER JOIN Turno T ON T.TurnoId = P.TurnoId
+            INNER JOIN HorarioDia HD ON HD.HorarioDiaId = T.HorarioDiaId
+            WHERE HD.HorarioId = @ID AND T.Eliminado = 0 AND HD.Eliminado = 0
+        )
+        BEGIN
+            SET @State = -1;
+            SET @Message = 'No se puede eliminar el horario porque tiene permisos asociados';
+            SET @CodeError = -1;
+            RETURN;
+        END
+
+        IF EXISTS (
+            SELECT 1
+            FROM Justificaciones J
+            INNER JOIN Turno T ON T.TurnoId = J.TurnoId
+            INNER JOIN HorarioDia HD ON HD.HorarioDiaId = T.HorarioDiaId
+            WHERE HD.HorarioId = @ID AND T.Eliminado = 0 AND HD.Eliminado = 0
+        )
+        BEGIN
+            SET @State = -1;
+            SET @Message = 'No se puede eliminar el horario porque tiene justificaciones asociadas';
             SET @CodeError = -1;
             RETURN;
         END
