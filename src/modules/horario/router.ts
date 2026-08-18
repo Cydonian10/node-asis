@@ -32,5 +32,6 @@ router.delete(
 router.post(HorarioPath.AsignarUsuarios, Controller.asignarUsuarios);
 router.delete(HorarioPath.DesasignarUsuario, Controller.desasignarUsuario);
 router.get(HorarioPath.GetUsuarios, Controller.getUsuarios);
+router.get(HorarioPath.GetMovimientos, Controller.getMovimientos);
 
 export default router;

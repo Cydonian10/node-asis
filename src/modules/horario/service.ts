@@ -15,6 +15,7 @@ import { CrearTurnoDto } from './dto/crear-turno.dto.js';
 import { ActualizarTurnoDto } from './dto/actualizar-turno.dto.js';
 import { CrearDiaConectadoDto } from './dto/crear-dia-conectado.dto.js';
 import { TurnoDiaConectado } from './dto/turno-dia-conectado.dto.js';
+import { HorarioMovimientos } from './dto/horario-movimientos.dto.js';
 import { AsignarUsuariosDto } from './dto/asignar-usuarios.dto.js';
 
 const _getAll = (areaId?: number, busqueda?: string): Promise<Horario[]> => {
@@ -30,6 +31,10 @@ const _getById = async (id: number): Promise<HorarioDetalle | null> => {
 
 const _getUsuarios = (horarioId: number): Promise<UsuarioHorario[]> => {
   return HorarioRepo.getUsuarios(horarioId);
+};
+
+const _getMovimientos = (horarioId: number): Promise<HorarioMovimientos> => {
+  return HorarioRepo.getMovimientos(horarioId);
 };
 
 const _create = (data: CrearHorarioDto): Promise<OperationResultCreate> => {
@@ -137,6 +142,7 @@ export const HorarioService = {
   getAll: _getAll,
   getById: _getById,
   getUsuarios: _getUsuarios,
+  getMovimientos: _getMovimientos,
   create: _create,
   update: _update,
   remove: _remove,

@@ -31,6 +31,27 @@ BEGIN
             RETURN;
         END
 
+        -- No permitir eliminar un dia que tenga turnos ligados a movimientos
+        -- (asistencia, turno modificado, licencia, permiso o justificacion).
+        IF EXISTS (
+            SELECT 1
+            FROM Turno T
+            WHERE T.HorarioDiaId = @ID AND T.Eliminado = 0
+                AND (
+                    EXISTS (SELECT 1 FROM Asistencia A WHERE A.turnoId = T.TurnoId)
+                    OR EXISTS (SELECT 1 FROM TurnoModificado TM WHERE TM.TurnoId = T.TurnoId AND TM.Eliminado = 0)
+                    OR EXISTS (SELECT 1 FROM Permisos P WHERE P.TurnoId = T.TurnoId)
+                    OR EXISTS (SELECT 1 FROM Justificaciones J WHERE J.TurnoId = T.TurnoId)
+                    OR EXISTS (SELECT 1 FROM Licencia L WHERE L.TurnoId = T.TurnoId)
+                )
+        )
+        BEGIN
+            SET @State = -1;
+            SET @Message = 'El dia tiene turnos con asistencias o movimientos (licencia, permiso, justificacion) y no puede eliminarse';
+            SET @CodeError = -1;
+            RETURN;
+        END
+
         BEGIN TRANSACTION;
 
         UPDATE STD

@@ -576,6 +576,37 @@ const HorarioPath = {
    *         description: Error interno del servidor.
    */
   GetUsuarios: '/:id/usuarios',
+
+  /**
+   * @swagger
+   * /horarios/{id}/movimientos:
+   *   get:
+   *     tags:
+   *       - Horarios
+   *     summary: Estado de movimientos del horario para validar ediciones
+   *     description: Retorna los turnos bloqueados (con Asistencia o TurnoModificado) y los flags de
+   *                  movimientos del horario (asistencias, turnos modificados, licencias, permisos,
+   *                  justificaciones, vacaciones de usuarios asignados) junto con el flag
+   *                  estructuraBloqueada. Usado por el formulario de edicion para restringir cambios
+   *                  de horas de turnos y la adicion de dias.
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         description: Id del horario (HorarioId).
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Estado de movimientos del horario.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/HorarioMovimientos'
+   *       500:
+   *         description: Error interno del servidor.
+   */
+  GetMovimientos: '/:id/movimientos',
 };
 
 export default HorarioPath;

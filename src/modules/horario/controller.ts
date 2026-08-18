@@ -49,6 +49,18 @@ const getUsuarios = async (req: Request, res: Response) => {
   return res.status(HttpStatusCodes.OK).json(items);
 };
 
+const getMovimientos = async (req: Request, res: Response) => {
+  const id = +req.params.id;
+  if (!id) {
+    return res
+      .status(HttpStatusCodes.BAD_REQUEST)
+      .json({ message: 'El id debe ser un número válido' });
+  }
+
+  const items = await HorarioService.getMovimientos(id);
+  return res.status(HttpStatusCodes.OK).json(items);
+};
+
 const create = async (req: Request, res: Response) => {
   const parsed = CrearHorarioSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -282,6 +294,7 @@ export default {
   getAll,
   getById,
   getUsuarios,
+  getMovimientos,
   create,
   update,
   remove,

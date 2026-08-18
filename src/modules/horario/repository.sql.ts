@@ -26,6 +26,7 @@ import { CrearTurnoDto } from './dto/crear-turno.dto.js';
 import { ActualizarTurnoDto } from './dto/actualizar-turno.dto.js';
 import { CrearDiaConectadoDto } from './dto/crear-dia-conectado.dto.js';
 import { TurnoDiaConectado } from './dto/turno-dia-conectado.dto.js';
+import { HorarioMovimientos } from './dto/horario-movimientos.dto.js';
 import { mapHorarioDetalle } from './mapper/horario.mapper.js';
 import logger from '@src/common/logger.js';
 import { LuxonAdapter } from '@src/common/plugins/luxon.js';
@@ -72,15 +73,68 @@ const getById = async (id: number): Promise<HorarioDetalle | null> => {
   try {
     const pool = await connectToDb();
     const request = pool.request();
-
-    request.input('HorarioId', sql.Int, id);
-
-    const result = await request.execute('usp_GetHorarioDetalle');
-    const recordsets = result.recordsets as unknown as Array<Array<unknown>>;
-    return mapHorarioDetalle(recordsets);
+    return await ejecutarDetalle(request, id);
   } catch (error) {
     return ErrorUtil.select(error as string);
   }
+};
+
+const ejecutarDetalle = async (
+  request: sql.Request,
+  id: number,
+): Promise<HorarioDetalle | null> => {
+  request.input('HorarioId', sql.Int, id);
+  const result = await request.execute('usp_GetHorarioDetalle');
+  const recordsets = result.recordsets as unknown as Array<Array<unknown>>;
+  return mapHorarioDetalle(recordsets);
+};
+
+const getMovimientos = async (horarioId: number): Promise<HorarioMovimientos> => {
+  try {
+    const pool = await connectToDb();
+    const request = pool.request();
+    return await ejecutarMovimientos(request, horarioId);
+  } catch (error) {
+    return ErrorUtil.select(error as string);
+  }
+};
+
+const ejecutarMovimientos = async (
+  request: sql.Request,
+  horarioId: number,
+): Promise<HorarioMovimientos> => {
+  request.input('HorarioId', sql.Int, horarioId);
+  const result = await request.execute('usp_GetHorarioMovimientos');
+  const recordsets = result.recordsets as unknown as Array<Array<unknown>>;
+  const turnosBloqueados = (recordsets[0] ?? []).map((row) =>
+    +((row as { turnoId: number }).turnoId),
+  );
+  const estado =
+    (recordsets[1] ?? [])[0] as Record<string, number> | undefined ?? {};
+  const estructuraBloqueada = [
+    estado.tieneAsistencias,
+    estado.tieneTurnosModificados,
+    estado.tieneLicencias,
+    estado.tienePermisos,
+    estado.tieneVacaciones,
+    estado.tieneJustificaciones,
+  ].some((value) => !!value);
+  return {
+    turnosBloqueados,
+    estructuraBloqueada,
+    tieneAsistencias: !!estado.tieneAsistencias,
+    tieneTurnosModificados: !!estado.tieneTurnosModificados,
+    tieneLicencias: !!estado.tieneLicencias,
+    tienePermisos: !!estado.tienePermisos,
+    tieneVacaciones: !!estado.tieneVacaciones,
+    tieneJustificaciones: !!estado.tieneJustificaciones,
+  };
+};
+
+const normalizarHora = (value: string | null | undefined): string => {
+  if (!value) return '';
+  const match = /^(\d{2}):(\d{2})/.exec(value);
+  return match ? `${match[1]}:${match[2]}` : value;
 };
 
 const getUsuarios = async (horarioId: number): Promise<UsuarioHorario[]> => {
@@ -148,6 +202,489 @@ const crearDiasHorario = async (
   }
 };
 
+const crearEstructura = async (
+  tx: sql.Transaction,
+  horarioId: number,
+  data: {
+    rotativo?: boolean;
+    dias?: CrearHorarioDto['dias'];
+    grupos?: CrearHorarioDto['grupos'];
+  },
+  userId: number,
+): Promise<void> => {
+  if (data.rotativo) {
+    for (const [gi, grupo] of (data.grupos ?? []).entries()) {
+      const grupoOutput = await executeCreate(
+        tx,
+        'usp_CreateVigenciaGrupo',
+        (req) => {
+          req.input('HorarioId', sql.Int, horarioId);
+          req.input(
+            'FechaInicio',
+            sql.Date,
+            LuxonAdapter.toSqlServerDate(grupo.fechaInicio),
+          );
+          req.input(
+            'FechaFin',
+            sql.Date,
+            LuxonAdapter.toSqlServerDate(grupo.fechaFin),
+          );
+          req.input('Orden', sql.Int, gi + 1);
+          req.input('USER', sql.Int, userId);
+          req.output('Id', sql.Int);
+        },
+      );
+      const vigenciaGrupoId = requireCreatedId(
+        grupoOutput,
+        'usp_CreateVigenciaGrupo',
+      );
+      await crearDiasHorario(tx, horarioId, vigenciaGrupoId, grupo.dias, userId);
+    }
+  } else {
+    await crearDiasHorario(tx, horarioId, null, data.dias ?? [], userId);
+  }
+};
+
+const sincronizarDiasYTurnos = async (
+  tx: sql.Transaction,
+  horarioId: number,
+  vigenciaGrupoId: number | null,
+  diasActuales: HorarioDetalle['dias'],
+  diasPropuestos: NonNullable<ActualizarHorarioDto['dias']>,
+  userId: number,
+): Promise<void> => {
+  const diasActualesMap = new Map(
+    diasActuales.map((d) => [d.horarioDiaId, d]),
+  );
+  const propuestosIds = new Set(
+    diasPropuestos
+      .filter((d) => d.horarioDiaId)
+      .map((d) => d.horarioDiaId as number),
+  );
+
+  for (const d of diasActuales) {
+    if (!propuestosIds.has(d.horarioDiaId)) {
+      await executeCreate(tx, 'usp_DeleteHorarioDia', (req) => {
+        req.input('ID', sql.Int, d.horarioDiaId);
+        req.input('USER', sql.Int, userId);
+      });
+    }
+  }
+
+  for (const diaPropuesto of diasPropuestos) {
+    let horarioDiaId = diaPropuesto.horarioDiaId;
+    if (horarioDiaId) {
+      await executeCreate(tx, 'usp_UpdateHorarioDia', (req) => {
+        req.input('ID', sql.Int, horarioDiaId);
+        req.input('Orden', sql.Int, diaPropuesto.orden ?? 0);
+        req.input('USER', sql.Int, userId);
+      });
+    } else {
+      const diaOutput = await executeCreate(tx, 'usp_CreateHorarioDia', (req) => {
+        req.input('HorarioId', sql.Int, horarioId);
+        req.input('DiaId', sql.Int, diaPropuesto.diaId);
+        req.input('VigenciaGrupoId', sql.Int, vigenciaGrupoId);
+        req.input('Orden', sql.Int, diaPropuesto.orden ?? 0);
+        req.input('USER', sql.Int, userId);
+        req.output('Id', sql.Int);
+      });
+      horarioDiaId = requireCreatedId(diaOutput, 'usp_CreateHorarioDia');
+    }
+
+    const diaActual = diasActualesMap.get(horarioDiaId);
+    await sincronizarTurnos(
+      tx,
+      horarioDiaId,
+      diaActual?.turnos ?? [],
+      diaPropuesto.turnos,
+      userId,
+    );
+  }
+};
+
+const sincronizarTurnos = async (
+  tx: sql.Transaction,
+  horarioDiaId: number,
+  turnosActuales: HorarioDetalle['dias'][number]['turnos'],
+  turnosPropuestos: {
+    turnoId?: number;
+    horaInicio: string;
+    horaFin: string;
+    extendido?: boolean;
+    diaSalidaId?: number | null;
+  }[],
+  userId: number,
+): Promise<void> => {
+  const turnosActualesMap = new Map(turnosActuales.map((t) => [t.turnoId, t]));
+  const propuestosIds = new Set(
+    turnosPropuestos
+      .filter((t) => t.turnoId)
+      .map((t) => t.turnoId as number),
+  );
+
+  for (const t of turnosActuales) {
+    if (!propuestosIds.has(t.turnoId)) {
+      await executeCreate(tx, 'usp_DeleteTurno', (req) => {
+        req.input('ID', sql.Int, t.turnoId);
+        req.input('USER', sql.Int, userId);
+      });
+    }
+  }
+
+  for (const turnoPropuesto of turnosPropuestos) {
+    const turnoId = turnoPropuesto.turnoId;
+    if (turnoId) {
+      const turnoActual = turnosActualesMap.get(turnoId);
+      const cambiaHora =
+        !turnoActual ||
+        normalizarHora(turnoActual.horaInicio) !==
+          normalizarHora(turnoPropuesto.horaInicio) ||
+        normalizarHora(turnoActual.horaFin) !==
+          normalizarHora(turnoPropuesto.horaFin) ||
+        turnoActual.extendido !== !!turnoPropuesto.extendido;
+      if (cambiaHora) {
+        await executeCreate(tx, 'usp_UpdateTurno', (req) => {
+          req.input('ID', sql.Int, turnoId);
+          req.input(
+            'HoraInicio',
+            sql.Time,
+            normalizeSqlTime(turnoPropuesto.horaInicio),
+          );
+          req.input(
+            'HoraFin',
+            sql.Time,
+            normalizeSqlTime(turnoPropuesto.horaFin),
+          );
+          req.input('Extendido', sql.Bit, turnoPropuesto.extendido ?? false);
+          req.input('USER', sql.Int, userId);
+        });
+      }
+      await sincronizarDiaSalida(
+        tx,
+        turnoId,
+        turnoActual?.diaSalida?.diaId ?? null,
+        turnoPropuesto.diaSalidaId ?? null,
+        userId,
+      );
+    } else {
+      const turnoOutput = await executeCreate(tx, 'usp_CreateTurno', (req) => {
+        req.input('HorarioDiaId', sql.Int, horarioDiaId);
+        req.input(
+          'HoraInicio',
+          sql.Time,
+          normalizeSqlTime(turnoPropuesto.horaInicio),
+        );
+        req.input(
+          'HoraFin',
+          sql.Time,
+          normalizeSqlTime(turnoPropuesto.horaFin),
+        );
+        req.input('Extendido', sql.Bit, turnoPropuesto.extendido ?? false);
+        req.input('USER', sql.Int, userId);
+        req.output('Id', sql.Int);
+      });
+      const nuevoTurnoId = requireCreatedId(turnoOutput, 'usp_CreateTurno');
+      if (turnoPropuesto.diaSalidaId) {
+        await executeCreate(tx, 'usp_CreateTurnoDiaConectado', (req) => {
+          req.input('TurnoId', sql.Int, nuevoTurnoId);
+          req.input('DiaId', sql.Int, turnoPropuesto.diaSalidaId);
+          req.input('USER', sql.Int, userId);
+          req.output('Id', sql.Int);
+        });
+      }
+    }
+  }
+};
+
+const sincronizarDiaSalida = async (
+  tx: sql.Transaction,
+  turnoId: number,
+  salidaActual: number | null,
+  salidaNueva: number | null,
+  userId: number,
+): Promise<void> => {
+  if (salidaActual === salidaNueva) return;
+
+  if (salidaActual !== null) {
+    const result = await new sql.Request(tx)
+      .input('TurnoId', sql.Int, turnoId)
+      .query(
+        'SELECT TOP 1 SalidaTurnoDiaId AS id FROM SalidaTurnoDia WHERE TurnoId = @TurnoId AND Eliminado = 0',
+      );
+    const row = result.recordset[0] as { id: number } | undefined;
+    if (row) {
+      await executeCreate(tx, 'usp_DeleteTurnoDiaConectado', (req) => {
+        req.input('ID', sql.Int, row.id);
+        req.input('USER', sql.Int, userId);
+      });
+    }
+  }
+
+  if (salidaNueva !== null) {
+    await executeCreate(tx, 'usp_CreateTurnoDiaConectado', (req) => {
+      req.input('TurnoId', sql.Int, turnoId);
+      req.input('DiaId', sql.Int, salidaNueva);
+      req.input('USER', sql.Int, userId);
+      req.output('Id', sql.Int);
+    });
+  }
+};
+
+const hayCambioEstructural = (
+  detalle: HorarioDetalle,
+  data: ActualizarHorarioDto,
+): boolean => {
+  const rotativoPropuesto = data.rotativo ?? detalle.rotativo;
+  if (rotativoPropuesto !== detalle.rotativo) {
+    return true;
+  }
+
+  // Estructura actual
+  const turnosActuales = new Map<
+    number,
+    {
+      horaInicio: string;
+      horaFin: string;
+      extendido: boolean;
+      diaSalidaId: number | null;
+    }
+  >();
+  const diasActuales = new Map<number, number[]>();
+  const gruposActuales = new Map<
+    number,
+    { fechaInicio: string | null; fechaFin: string | null }
+  >();
+
+  const cargarDiasActuales = (dias: HorarioDetalle['dias']) => {
+    for (const d of dias) {
+      diasActuales.set(d.horarioDiaId, d.turnos.map((t) => t.turnoId));
+      for (const t of d.turnos) {
+        turnosActuales.set(t.turnoId, {
+          horaInicio: normalizarHora(t.horaInicio),
+          horaFin: normalizarHora(t.horaFin),
+          extendido: t.extendido,
+          diaSalidaId: t.diaSalida?.diaId ?? null,
+        });
+      }
+    }
+  };
+
+  if (detalle.rotativo) {
+    for (const g of detalle.grupos) {
+      gruposActuales.set(g.vigenciaGrupoId, {
+        fechaInicio: g.fechaInicio,
+        fechaFin: g.fechaFin,
+      });
+      cargarDiasActuales(g.dias);
+    }
+  } else {
+    cargarDiasActuales(detalle.dias);
+  }
+
+  // Estructura propuesta
+  const turnosPropuestos = new Map<
+    number,
+    {
+      horaInicio: string;
+      horaFin: string;
+      extendido: boolean;
+      diaSalidaId: number | null;
+    }
+  >();
+  const diasPropuestos = new Set<number>();
+  const gruposPropuestos = new Map<
+    number,
+    { fechaInicio: string; fechaFin: string | null }
+  >();
+
+  const registrarTurnosPropuestos = (
+    dias: NonNullable<ActualizarHorarioDto['dias']>,
+  ): boolean => {
+    for (const d of dias) {
+      if (!d.horarioDiaId) {
+        return true;
+      }
+      diasPropuestos.add(d.horarioDiaId);
+      for (const t of d.turnos) {
+        if (!t.turnoId) {
+          return true;
+        }
+        turnosPropuestos.set(t.turnoId, {
+          horaInicio: normalizarHora(t.horaInicio),
+          horaFin: normalizarHora(t.horaFin),
+          extendido: !!t.extendido,
+          diaSalidaId: t.diaSalidaId ?? null,
+        });
+      }
+    }
+    return false;
+  };
+
+  if (rotativoPropuesto) {
+    for (const g of data.grupos ?? []) {
+      if (!g.vigenciaGrupoId) {
+        return true;
+      }
+      gruposPropuestos.set(g.vigenciaGrupoId, {
+        fechaInicio: g.fechaInicio,
+        fechaFin: g.fechaFin ?? null,
+      });
+      if (registrarTurnosPropuestos(g.dias)) {
+        return true;
+      }
+    }
+  } else if (registrarTurnosPropuestos(data.dias ?? [])) {
+    return true;
+  }
+
+  // Comparar grupos
+  if (gruposActuales.size !== gruposPropuestos.size) {
+    return true;
+  }
+  for (const [id, pg] of gruposPropuestos) {
+    const ag = gruposActuales.get(id);
+    if (
+      !ag ||
+      (ag.fechaInicio ?? null) !== pg.fechaInicio ||
+      (ag.fechaFin ?? null) !== pg.fechaFin
+    ) {
+      return true;
+    }
+  }
+
+  // Comparar días
+  if (diasActuales.size !== diasPropuestos.size) {
+    return true;
+  }
+  for (const id of diasPropuestos) {
+    if (!diasActuales.has(id)) {
+      return true;
+    }
+  }
+
+  // Comparar turnos
+  if (turnosActuales.size !== turnosPropuestos.size) {
+    return true;
+  }
+  for (const [id, pt] of turnosPropuestos) {
+    const at = turnosActuales.get(id);
+    if (
+      !at ||
+      at.horaInicio !== pt.horaInicio ||
+      at.horaFin !== pt.horaFin ||
+      at.extendido !== pt.extendido ||
+      at.diaSalidaId !== pt.diaSalidaId
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const validarCambiosHorario = (
+  detalle: HorarioDetalle,
+  data: ActualizarHorarioDto,
+  turnosBloqueados: Set<number>,
+): string | null => {
+  if (turnosBloqueados.size === 0) {
+    return null;
+  }
+  if (hayCambioEstructural(detalle, data)) {
+    return 'No se puede modificar la estructura del horario porque tiene turnos con movimientos (asistencias o turnos modificados). Solo puedes editar los datos generales (nombre, horas laborales y área).';
+  }
+  return null;
+};
+
+const sincronizarGrupos = async (
+  tx: sql.Transaction,
+  horarioId: number,
+  gruposActuales: HorarioDetalle['grupos'],
+  gruposPropuestos: NonNullable<ActualizarHorarioDto['grupos']>,
+  userId: number,
+): Promise<void> => {
+  const gruposActualesMap = new Map(
+    gruposActuales.map((g) => [g.vigenciaGrupoId, g]),
+  );
+  const propuestosIds = new Set(
+    gruposPropuestos
+      .filter((g) => g.vigenciaGrupoId)
+      .map((g) => g.vigenciaGrupoId as number),
+  );
+
+  for (const g of gruposActuales) {
+    if (!propuestosIds.has(g.vigenciaGrupoId)) {
+      await executeCreate(tx, 'usp_DeleteVigenciaGrupo', (req) => {
+        req.input('ID', sql.Int, g.vigenciaGrupoId);
+        req.input('USER', sql.Int, userId);
+      });
+    }
+  }
+
+  for (const [gi, grupoPropuesto] of gruposPropuestos.entries()) {
+    let vigenciaGrupoId = grupoPropuesto.vigenciaGrupoId;
+    if (vigenciaGrupoId) {
+      const grupoActual = gruposActualesMap.get(vigenciaGrupoId);
+      await executeCreate(tx, 'usp_UpdateVigenciaGrupo', (req) => {
+        req.input('ID', sql.Int, vigenciaGrupoId);
+        req.input(
+          'FechaInicio',
+          sql.Date,
+          LuxonAdapter.toSqlServerDate(grupoPropuesto.fechaInicio),
+        );
+        req.input(
+          'FechaFin',
+          sql.Date,
+          LuxonAdapter.toSqlServerDate(grupoPropuesto.fechaFin),
+        );
+        req.input('Orden', sql.Int, gi + 1);
+        req.input('USER', sql.Int, userId);
+      });
+      await sincronizarDiasYTurnos(
+        tx,
+        horarioId,
+        vigenciaGrupoId,
+        grupoActual?.dias ?? [],
+        grupoPropuesto.dias,
+        userId,
+      );
+    } else {
+      const grupoOutput = await executeCreate(
+        tx,
+        'usp_CreateVigenciaGrupo',
+        (req) => {
+          req.input('HorarioId', sql.Int, horarioId);
+          req.input(
+            'FechaInicio',
+            sql.Date,
+            LuxonAdapter.toSqlServerDate(grupoPropuesto.fechaInicio),
+          );
+          req.input(
+            'FechaFin',
+            sql.Date,
+            LuxonAdapter.toSqlServerDate(grupoPropuesto.fechaFin),
+          );
+          req.input('Orden', sql.Int, gi + 1);
+          req.input('USER', sql.Int, userId);
+          req.output('Id', sql.Int);
+        },
+      );
+      vigenciaGrupoId = requireCreatedId(
+        grupoOutput,
+        'usp_CreateVigenciaGrupo',
+      );
+      await sincronizarDiasYTurnos(
+        tx,
+        horarioId,
+        vigenciaGrupoId,
+        [],
+        grupoPropuesto.dias,
+        userId,
+      );
+    }
+  }
+};
+
 const create = async (
   data: CrearHorarioDto,
   userId: number,
@@ -171,44 +708,7 @@ const create = async (
 
       const horarioId = requireCreatedId(horarioOutput, 'usp_CreateHorario');
 
-      if (data.rotativo) {
-        for (const [gi, grupo] of (data.grupos ?? []).entries()) {
-          const grupoOutput = await executeCreate(
-            tx,
-            'usp_CreateVigenciaGrupo',
-            (req) => {
-              req.input('HorarioId', sql.Int, horarioId);
-              req.input(
-                'FechaInicio',
-                sql.Date,
-                LuxonAdapter.toSqlServerDate(grupo.fechaInicio),
-              );
-              req.input(
-                'FechaFin',
-                sql.Date,
-                LuxonAdapter.toSqlServerDate(grupo.fechaFin),
-              );
-              req.input('Orden', sql.Int, gi + 1);
-              req.input('USER', sql.Int, userId);
-              req.output('Id', sql.Int);
-            },
-          );
-          const vigenciaGrupoId = requireCreatedId(
-            grupoOutput,
-            'usp_CreateVigenciaGrupo',
-          );
-
-          await crearDiasHorario(
-            tx,
-            horarioId,
-            vigenciaGrupoId,
-            grupo.dias,
-            userId,
-          );
-        }
-      } else {
-        await crearDiasHorario(tx, horarioId, null, data.dias ?? [], userId);
-      }
+      await crearEstructura(tx, horarioId, data, userId);
 
       if (data.usuarioIds && data.usuarioIds.length > 0) {
         const req = new sql.Request(tx);
@@ -261,24 +761,101 @@ const update = async (
   userId: number,
 ): Promise<OperationResult> => {
   try {
-    const pool = await connectToDb();
-    const request = pool.request();
+    return await runTransaction(async (tx) => {
+      const detalle = await ejecutarDetalle(new sql.Request(tx), id);
+      if (!detalle) {
+        return { State: -1, Message: 'El horario no existe', CodeError: -1 };
+      }
 
-    request.input('ID', sql.Int, id);
-    request.input('Nombre', sql.VarChar(200), data.nombre ?? null);
-    request.input('AreaId', sql.Int, data.areaId ?? null);
-    request.input('Extendido', sql.Bit, data.extendido ?? null);
-    request.input('Rotativo', sql.Bit, data.rotativo ?? null);
-    request.input('Regular', sql.Bit, data.regular ?? null);
-    request.input('HorasLaborales', sql.Int, data.horasLaborales ?? null);
-    request.input('USER', sql.Int, userId);
+      const movimientos = await ejecutarMovimientos(new sql.Request(tx), id);
+      const turnosBloqueados = new Set(movimientos.turnosBloqueados);
+      const rotativoPropuesto = data.rotativo ?? detalle.rotativo;
+      const tipoCambia =
+        data.rotativo !== undefined && data.rotativo !== detalle.rotativo;
 
-    request.output('State', sql.Int);
-    request.output('Message', sql.VarChar(255));
-    request.output('CodeError', sql.Int);
+      if (data.dias || data.grupos) {
+        const error = validarCambiosHorario(detalle, data, turnosBloqueados);
+        if (error) {
+          return { State: -1, Message: error, CodeError: -1 };
+        }
+      }
 
-    const result = await request.execute('usp_UpdateHorario');
-    return handleOperationResult(result.output as OperationResult);
+      const flatResult = await new sql.Request(tx)
+        .input('ID', sql.Int, id)
+        .input('Nombre', sql.VarChar(200), data.nombre ?? null)
+        .input('AreaId', sql.Int, data.areaId ?? null)
+        .input('Extendido', sql.Bit, data.extendido ?? null)
+        .input('Rotativo', sql.Bit, data.rotativo ?? null)
+        .input('Regular', sql.Bit, data.regular ?? null)
+        .input('HorasLaborales', sql.Int, data.horasLaborales ?? null)
+        .input('USER', sql.Int, userId)
+        .output('State', sql.Int)
+        .output('Message', sql.VarChar(255))
+        .output('CodeError', sql.Int)
+        .execute('usp_UpdateHorario');
+
+      const flatOutput = flatResult.output as unknown as SPOutput;
+      if (flatOutput.State !== 1) {
+        return {
+          State: -1,
+          Message: flatOutput.Message,
+          CodeError: flatOutput.CodeError ?? -1,
+        };
+      }
+
+      if (data.dias || data.grupos) {
+        if (tipoCambia) {
+          if (detalle.rotativo) {
+            for (const g of detalle.grupos) {
+              await executeCreate(tx, 'usp_DeleteVigenciaGrupo', (req) => {
+                req.input('ID', sql.Int, g.vigenciaGrupoId);
+                req.input('USER', sql.Int, userId);
+              });
+            }
+          } else {
+            for (const d of detalle.dias) {
+              await executeCreate(tx, 'usp_DeleteHorarioDia', (req) => {
+                req.input('ID', sql.Int, d.horarioDiaId);
+                req.input('USER', sql.Int, userId);
+              });
+            }
+          }
+          await crearEstructura(
+            tx,
+            id,
+            {
+              rotativo: rotativoPropuesto,
+              dias: data.dias,
+              grupos: data.grupos,
+            },
+            userId,
+          );
+        } else if (rotativoPropuesto) {
+          await sincronizarGrupos(
+            tx,
+            id,
+            detalle.grupos,
+            data.grupos ?? [],
+            userId,
+          );
+        } else {
+          await sincronizarDiasYTurnos(
+            tx,
+            id,
+            null,
+            detalle.dias,
+            data.dias ?? [],
+            userId,
+          );
+        }
+      }
+
+      return {
+        State: 1,
+        Message: 'Horario actualizado correctamente',
+        CodeError: 0,
+      };
+    });
   } catch (error) {
     return ErrorUtil.update(error as string);
   }
@@ -593,6 +1170,7 @@ export default {
   getAll,
   getById,
   getUsuarios,
+  getMovimientos,
   create,
   update,
   remove,

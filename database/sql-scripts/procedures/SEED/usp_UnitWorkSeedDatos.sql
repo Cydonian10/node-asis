@@ -240,17 +240,17 @@ BEGIN
         FROM Usuario U WHERE U.SyncUsuarioId = 2003;
 
         -- ===================== PERMISO (usuario 2003) =====================
-        INSERT INTO Permisos (UsuarioId, FechaSolicitud, HoraSalida, HoraRetorno, Motivo, HoraDeRetornoEstimada, Tipo, Estado, CreatedBy, UpdatedBy)
-        SELECT U.UsuarioId, GETDATE(), '12:00', '14:00', 'Permiso seed', '14:00', 'Personal', 'Aprobado', @USER, @USER
+        INSERT INTO Permisos (UsuarioId, FechaSolicitud, HoraSalida, HoraRetorno, HoraDeRetornoEstimada, Tipo, Estado, CreatedBy, UpdatedBy)
+        SELECT U.UsuarioId, GETDATE(), '12:00', '14:00', '14:00', 'Personal', 'Aprobado', @USER, @USER
         FROM Usuario U WHERE U.SyncUsuarioId = 2003;
 
         -- ===================== JUSTIFICACIONES =====================
-        INSERT INTO Justificaciones (UsuarioId, Fecha, Motivo, Archivo, CreatedBy, UpdatedBy)
-        SELECT U.UsuarioId, CAST(GETDATE() AS DATE), 'Justificacion seed 2001', NULL, @USER, @USER
+        INSERT INTO Justificaciones (UsuarioId, Fecha, Archivo, CreatedBy, UpdatedBy)
+        SELECT U.UsuarioId, CAST(GETDATE() AS DATE), NULL, @USER, @USER
         FROM Usuario U WHERE U.SyncUsuarioId = 2001;
 
-        INSERT INTO Justificaciones (UsuarioId, Fecha, Motivo, Archivo, CreatedBy, UpdatedBy)
-        SELECT U.UsuarioId, CAST(GETDATE() AS DATE), 'Justificacion seed 2002', NULL, @USER, @USER
+        INSERT INTO Justificaciones (UsuarioId, Fecha, Archivo, CreatedBy, UpdatedBy)
+        SELECT U.UsuarioId, CAST(GETDATE() AS DATE), NULL, @USER, @USER
         FROM Usuario U WHERE U.SyncUsuarioId = 2002;
 
         COMMIT TRANSACTION;

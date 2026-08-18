@@ -1,58 +1,8 @@
 import { z } from 'zod';
-
-const TurnoInputSchema = z.object({
-  horaInicio: z
-    .string({ message: 'horaInicio es requerido' })
-    .regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, {
-      message: 'horaInicio debe ser una hora válida (HH:mm)',
-    }),
-  horaFin: z
-    .string({ message: 'horaFin es requerido' })
-    .regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, {
-      message: 'horaFin debe ser una hora válida (HH:mm)',
-    }),
-  extendido: z
-    .boolean({ message: 'extendido debe ser un booleano' })
-    .optional(),
-  diaSalidaId: z
-    .number({ message: 'diaSalidaId debe ser un número' })
-    .int({ message: 'diaSalidaId debe ser un entero' })
-    .positive({ message: 'diaSalidaId debe ser mayor a 0' })
-    .optional(),
-});
-
-const DiaInputSchema = z.object({
-  diaId: z
-    .number({ message: 'diaId es requerido' })
-    .int()
-    .positive({ message: 'diaId debe ser mayor a 0' }),
-  orden: z
-    .number({ message: 'orden es requerido' })
-    .int()
-    .min(0, { message: 'orden no puede ser negativo' })
-    .optional(),
-  turnos: z
-    .array(TurnoInputSchema, { message: 'turnos es requerido' })
-    .min(1, { message: 'turnos no puede estar vacío' }),
-});
-
-const GrupoVigenciaInputSchema = z.object({
-  fechaInicio: z
-    .string({ message: 'fechaInicio es requerido' })
-    .regex(/^\d{4}-\d{2}-\d{2}$/, {
-      message: 'fechaInicio debe ser una fecha válida (YYYY-MM-DD)',
-    }),
-  fechaFin: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, {
-      message: 'fechaFin debe ser una fecha válida (YYYY-MM-DD)',
-    })
-    .nullable()
-    .optional(),
-  dias: z
-    .array(DiaInputSchema, { message: 'dias es requerido' })
-    .min(1, { message: 'dias no puede estar vacío' }),
-});
+import {
+  DiaInputSchema,
+  GrupoVigenciaInputSchema,
+} from './horario-input.schemas.js';
 
 /**
  * @swagger
