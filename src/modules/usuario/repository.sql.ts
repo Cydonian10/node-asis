@@ -13,6 +13,11 @@ import { Usuario } from './dto/usuario.dto.js';
 import { SyncUsuario } from './dto/sync-usuario.dto.js';
 import { ActualizarUsuarioDto } from './dto/actualizar-usuario.dto.js';
 import { CrearSyncUsuarioDto } from './dto/crear-sync-usuario.dto.js';
+import { LuxonAdapter } from '@src/common/plugins/luxon.js';
+import {
+  EstadoAsignacion,
+  UsuarioHorarioAsignacion,
+} from './dto/usuario-horario-asignacion.dto.js';
 
 const getAllMigrados = async (
   activo?: boolean,
@@ -117,10 +122,57 @@ const createSyncUsuario = async (
   }
 };
 
+const getHorarios = async (
+  usuarioId: number,
+): Promise<UsuarioHorarioAsignacion[]> => {
+  try {
+    const pool = await connectToDb();
+    const request = pool.request();
+
+    request.input('UsuarioId', sql.Int, usuarioId);
+
+    const result = await request.execute<Record<string, unknown>>(
+      'usp_GetUsuarioHorarios',
+    );
+    const hoy = new Date().toISOString().slice(0, 10);
+
+    return (result.recordset ?? []).map((row) => {
+      const culminacion = !!row.culminacion;
+      const fechaFin = LuxonAdapter.fromSqlServerDate(
+        row.fechaFin as string | Date | null,
+      );
+      let estado: EstadoAsignacion;
+      if (culminacion) {
+        estado = 'culminado';
+      } else if (fechaFin && fechaFin < hoy) {
+        estado = 'vencido';
+      } else {
+        estado = 'activo';
+      }
+      return {
+        horarioAsignacionId: +(row.horarioAsignacionId as number),
+        horarioId: +(row.horarioId as number),
+        horarioNombre: String(row.horarioNombre ?? ''),
+        areaId: +(row.areaId as number),
+        areaNombre: (row.areaNombre as string | null) ?? null,
+        fechaInicio: LuxonAdapter.fromSqlServerDate(
+          row.fechaInicio as string | Date | null,
+        ),
+        fechaFin,
+        culminacion,
+        estado,
+      };
+    });
+  } catch (error) {
+    return ErrorUtil.select(error as string);
+  }
+};
+
 export default {
   getAllMigrados,
   getById,
   getAllSync,
   update,
   createSyncUsuario,
+  getHorarios,
 };

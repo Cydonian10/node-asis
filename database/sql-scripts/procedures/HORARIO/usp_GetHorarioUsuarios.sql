@@ -7,7 +7,7 @@ OBJETIVO: Listar los usuarios asignados a un horario (HorarioAsignacion JOIN Usu
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
- -     -            -            -
+  1  18-08-2026  Gabriel    Agrega HA.Culminacion a la salida.
 ======================================================================================================*/
 CREATE OR ALTER PROCEDURE [dbo].[usp_GetHorarioUsuarios]
     -- Parametros de entrada
@@ -24,7 +24,8 @@ BEGIN
         SU.Nombres AS nombres,
         SU.Apellidos AS apellidos,
         HA.FechaInicio AS fechaInicio,
-        HA.FechaFin AS fechaFin
+        HA.FechaFin AS fechaFin,
+        HA.Culminacion AS culminacion
     FROM HorarioAsignacion HA
     INNER JOIN Usuario U ON U.UsuarioId = HA.UsuarioId
     INNER JOIN SyncUsuarios SU ON SU.SyncUsuarioId = U.SyncUsuarioId

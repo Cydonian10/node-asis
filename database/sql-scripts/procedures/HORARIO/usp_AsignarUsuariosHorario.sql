@@ -2,13 +2,13 @@
 NOMBRE: [dbo].[usp_AsignarUsuariosHorario]
 FECHA: 05-08-2026
 AUTOR: Gabriel
-OBJETIVO: Asignar en lote usuarios a un horario. Valida que cada usuario exista, no este eliminado
-          y pertenezca al area del horario. Inserta HorarioAsignacion con el rango de fechas recibido.
-          No duplica (UsuarioId, HorarioId) no eliminados.
+OBJETIVO: Asignar en lote usuarios a un horario. Valida que cada usuario exista, no este eliminado,
+          pertenezca al area del horario y no tenga horarios no culminados (Culminacion = 0). Inserta
+          HorarioAsignacion con el rango de fechas recibido. No duplica (UsuarioId, HorarioId) no eliminados.
 
 MODIFICACIONES:
 NRO  FECHA       USUARIO    MODIFICACION
- -     -            -            -
+  1  18-08-2026  Gabriel    Valida que todas las asignaciones previas del usuario esten culminadas.
 ======================================================================================================*/
 CREATE OR ALTER PROCEDURE [dbo].[usp_AsignarUsuariosHorario]
     -- Parametros de entrada
@@ -63,6 +63,22 @@ BEGIN
         BEGIN
             SET @State = -1;
             SET @Message = 'Todos los usuarios deben pertenecer al area del horario';
+            SET @CodeError = -1;
+            RETURN;
+        END
+
+        -- Validacion de culminacion: solo se puede asignar un nuevo horario cuando todas
+        -- las asignaciones previas del usuario estan culminadas (Culminacion = 1).
+        IF EXISTS (
+            SELECT 1
+            FROM @UsuarioIds ids
+            INNER JOIN HorarioAsignacion HA
+                ON HA.UsuarioId = ids.Value AND HA.Eliminado = 0
+            WHERE HA.Culminacion = 0
+        )
+        BEGIN
+            SET @State = -1;
+            SET @Message = 'El usuario aún tiene horarios no culminados. Solo puede asignarse un nuevo horario cuando todos sus horarios están culminados.';
             SET @CodeError = -1;
             RETURN;
         END

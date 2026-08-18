@@ -60,6 +60,18 @@ const createSyncUsuario = async (req: Request, res: Response) => {
   return res.status(HttpStatusCodes.CREATED).json(result);
 };
 
+const getHorarios = async (req: Request, res: Response) => {
+  const id = +req.params.id;
+  if (!id) {
+    return res
+      .status(HttpStatusCodes.BAD_REQUEST)
+      .json({ message: 'El id debe ser un número válido' });
+  }
+
+  const items = await UsuarioService.getHorarios(id);
+  return res.status(HttpStatusCodes.OK).json(items);
+};
+
 const update = async (req: Request, res: Response) => {
   const id = +req.params.id;
   if (!id) {
@@ -86,4 +98,5 @@ export default {
   getAllSync,
   createSyncUsuario,
   update,
+  getHorarios,
 };

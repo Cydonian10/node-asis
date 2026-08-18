@@ -2,28 +2,21 @@
  * @swagger
  * components:
  *  schemas:
- *    UsuarioHorario:
+ *    UsuarioHorarioAsignacion:
  *      type: object
- *      description: Usuario asignado a un horario (JOIN HorarioAsignacion + Usuario + SyncUsuarios).
+ *      description: Asignacion de un horario a un usuario con su estado calculado.
  *      properties:
  *        horarioAsignacionId:
  *          type: integer
- *          example: 1
- *        usuarioId:
+ *        horarioId:
  *          type: integer
- *          example: 5
- *        syncUsuarioId:
+ *        horarioNombre:
+ *          type: string
+ *        areaId:
  *          type: integer
- *          example: 100
- *        usuario:
+ *        areaNombre:
  *          type: string
- *          example: jperez
- *        nombres:
- *          type: string
- *          example: Juan
- *        apellidos:
- *          type: string
- *          example: Pérez
+ *          nullable: true
  *        fechaInicio:
  *          type: string
  *          format: date
@@ -35,15 +28,20 @@
  *        culminacion:
  *          type: boolean
  *          description: true cuando el horario fue marcado como culminado.
+ *        estado:
+ *          type: string
+ *          enum: [activo, vencido, culminado]
  */
-export type UsuarioHorario = {
+export type EstadoAsignacion = 'activo' | 'vencido' | 'culminado';
+
+export type UsuarioHorarioAsignacion = {
   horarioAsignacionId: number;
-  usuarioId: number;
-  syncUsuarioId: number;
-  usuario: string;
-  nombres: string;
-  apellidos: string;
+  horarioId: number;
+  horarioNombre: string;
+  areaId: number;
+  areaNombre: string | null;
   fechaInicio: string | null;
   fechaFin: string | null;
   culminacion: boolean;
+  estado: EstadoAsignacion;
 };

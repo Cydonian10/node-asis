@@ -114,6 +114,7 @@ CREATE TABLE HorarioAsignacion
     HorarioId INT NOT NULL,
     FechaInicio DATE,
     FechaFin DATE,
+    Culminacion BIT NOT NULL DEFAULT 0,
     Eliminado BIT DEFAULT 0,
     CreatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedAt DATETIME2 DEFAULT GETDATE(),

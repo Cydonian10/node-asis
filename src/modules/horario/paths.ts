@@ -607,6 +607,72 @@ const HorarioPath = {
    *         description: Error interno del servidor.
    */
   GetMovimientos: '/:id/movimientos',
+
+  /**
+   * @swagger
+   * /horarios/asignaciones/{horarioAsignacionId}/culminar:
+   *   patch:
+   *     tags:
+   *       - Horarios
+   *     summary: Marca una asignacion de horario como culminada
+   *     description: Pone Culminacion = 1 en la HorarioAsignacion. Solo se permite asignar un nuevo
+   *                  horario a un usuario cuando todas sus asignaciones previas estan culminadas.
+   *     parameters:
+   *       - in: path
+   *         name: horarioAsignacionId
+   *         required: true
+   *         description: Id de la asignacion (HorarioAsignacionId).
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Horario marcado como culminado correctamente.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/OperationResult'
+   *       400:
+   *         description: Id no valido.
+   *       500:
+   *         description: Error interno del servidor.
+   */
+  CulminarAsignacion: '/asignaciones/:horarioAsignacionId/culminar',
+
+  /**
+   * @swagger
+   * /horarios/asignaciones/{horarioAsignacionId}:
+   *   patch:
+   *     tags:
+   *       - Horarios
+   *     summary: Actualiza la fecha de culminacion de una asignacion de horario
+   *     description: Permite extender (o limpiar) la FechaFin de una asignacion que NO esta culminada.
+   *                  Rechaza asignaciones culminadas o fechas anteriores a la FechaInicio.
+   *     parameters:
+   *       - in: path
+   *         name: horarioAsignacionId
+   *         required: true
+   *         description: Id de la asignacion (HorarioAsignacionId).
+   *         schema:
+   *           type: integer
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/ActualizarAsignacionDto'
+   *     responses:
+   *       200:
+   *         description: Fecha de culminacion actualizada correctamente.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/OperationResult'
+   *       400:
+   *         description: Id o cuerpo invalido.
+   *       500:
+   *         description: Error interno del servidor.
+   */
+  ActualizarAsignacion: '/asignaciones/:horarioAsignacionId',
 };
 
 export default HorarioPath;

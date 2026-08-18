@@ -9,6 +9,7 @@ router.get(UsuarioPath.GetAll, Controller.getAllMigrados);
 router.get(UsuarioPath.GetAllSync, Controller.getAllSync);
 router.post(UsuarioPath.CreateSync, Controller.createSyncUsuario);
 router.get(UsuarioPath.GetById, Controller.getById);
+router.get(UsuarioPath.GetHorarios, Controller.getHorarios);
 router.patch(UsuarioPath.Update, Controller.update);
 
 export default router;

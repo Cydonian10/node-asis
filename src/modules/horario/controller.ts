@@ -10,6 +10,7 @@ import { CrearTurnoSchema } from './validations/crear-turno.validation.js';
 import { ActualizarTurnoSchema } from './validations/actualizar-turno.validation.js';
 import { CrearDiaConectadoSchema } from './validations/crear-dia-conectado.validation.js';
 import { AsignarUsuariosSchema } from './validations/asignar-usuarios.validation.js';
+import { ActualizarAsignacionSchema } from './validations/actualizar-asignacion.validation.js';
 
 const getAll = async (req: Request, res: Response) => {
   const areaId =
@@ -290,6 +291,41 @@ const desasignarUsuario = async (req: Request, res: Response) => {
   return res.status(HttpStatusCodes.OK).json(result);
 };
 
+const culminarAsignacion = async (req: Request, res: Response) => {
+  const horarioAsignacionId = +req.params.horarioAsignacionId;
+  if (!horarioAsignacionId) {
+    return res
+      .status(HttpStatusCodes.BAD_REQUEST)
+      .json({ message: 'El id debe ser un número válido' });
+  }
+
+  const result = await HorarioService.culminarAsignacion(horarioAsignacionId);
+  return res.status(HttpStatusCodes.OK).json(result);
+};
+
+const actualizarAsignacion = async (req: Request, res: Response) => {
+  const horarioAsignacionId = +req.params.horarioAsignacionId;
+  if (!horarioAsignacionId) {
+    return res
+      .status(HttpStatusCodes.BAD_REQUEST)
+      .json({ message: 'El id debe ser un número válido' });
+  }
+
+  const parsed = ActualizarAsignacionSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(HttpStatusCodes.BAD_REQUEST).json({
+      message: 'Datos inválidos',
+      errors: formatZodError(parsed.error),
+    });
+  }
+
+  const result = await HorarioService.actualizarAsignacion(
+    horarioAsignacionId,
+    parsed.data,
+  );
+  return res.status(HttpStatusCodes.OK).json(result);
+};
+
 export default {
   getAll,
   getById,
@@ -309,4 +345,6 @@ export default {
   removeTurnoDiaConectado,
   asignarUsuarios,
   desasignarUsuario,
+  culminarAsignacion,
+  actualizarAsignacion,
 };

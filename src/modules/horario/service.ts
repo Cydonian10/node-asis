@@ -17,6 +17,7 @@ import { CrearDiaConectadoDto } from './dto/crear-dia-conectado.dto.js';
 import { TurnoDiaConectado } from './dto/turno-dia-conectado.dto.js';
 import { HorarioMovimientos } from './dto/horario-movimientos.dto.js';
 import { AsignarUsuariosDto } from './dto/asignar-usuarios.dto.js';
+import { ActualizarAsignacionDto } from './dto/actualizar-asignacion.dto.js';
 
 const _getAll = (areaId?: number, busqueda?: string): Promise<Horario[]> => {
   return HorarioRepo.getAll(areaId, busqueda);
@@ -138,6 +139,25 @@ const _desasignarUsuario = (
   return HorarioRepo.desasignarUsuario(horarioId, usuarioId, userId);
 };
 
+const _culminarAsignacion = (
+  horarioAsignacionId: number,
+): Promise<OperationResult> => {
+  const userId = authService.getUser().id;
+  return HorarioRepo.culminarAsignacion(horarioAsignacionId, userId);
+};
+
+const _actualizarAsignacion = (
+  horarioAsignacionId: number,
+  data: ActualizarAsignacionDto,
+): Promise<OperationResult> => {
+  const userId = authService.getUser().id;
+  return HorarioRepo.actualizarAsignacion(
+    horarioAsignacionId,
+    data.fechaFin,
+    userId,
+  );
+};
+
 export const HorarioService = {
   getAll: _getAll,
   getById: _getById,
@@ -157,4 +177,6 @@ export const HorarioService = {
   removeTurnoDiaConectado: _removeTurnoDiaConectado,
   asignarUsuarios: _asignarUsuarios,
   desasignarUsuario: _desasignarUsuario,
+  culminarAsignacion: _culminarAsignacion,
+  actualizarAsignacion: _actualizarAsignacion,
 };

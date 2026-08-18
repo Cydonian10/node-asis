@@ -1234,6 +1234,58 @@ const desasignarUsuario = async (
   }
 };
 
+const culminarAsignacion = async (
+  horarioAsignacionId: number,
+  userId: number,
+): Promise<OperationResult> => {
+  try {
+    const pool = await connectToDb();
+    const request = pool.request();
+
+    request.input('HorarioAsignacionId', sql.Int, horarioAsignacionId);
+    request.input('USER', sql.Int, userId);
+
+    request.output('State', sql.Int);
+    request.output('Message', sql.VarChar(255));
+    request.output('CodeError', sql.Int);
+
+    const result = await request.execute('usp_CulminarHorarioAsignacion');
+    return handleOperationResult(result.output as OperationResult);
+  } catch (error) {
+    return ErrorUtil.update(error as string);
+  }
+};
+
+const actualizarAsignacion = async (
+  horarioAsignacionId: number,
+  fechaFin: string | null,
+  userId: number,
+): Promise<OperationResult> => {
+  try {
+    const pool = await connectToDb();
+    const request = pool.request();
+
+    request.input('HorarioAsignacionId', sql.Int, horarioAsignacionId);
+    request.input(
+      'FechaFin',
+      sql.Date,
+      LuxonAdapter.toSqlServerDate(fechaFin),
+    );
+    request.input('USER', sql.Int, userId);
+
+    request.output('State', sql.Int);
+    request.output('Message', sql.VarChar(255));
+    request.output('CodeError', sql.Int);
+
+    const result = await request.execute(
+      'usp_ActualizarFechaFinHorarioAsignacion',
+    );
+    return handleOperationResult(result.output as OperationResult);
+  } catch (error) {
+    return ErrorUtil.update(error as string);
+  }
+};
+
 export default {
   getAll,
   getById,
@@ -1253,4 +1305,6 @@ export default {
   removeTurnoDiaConectado,
   asignarUsuarios,
   desasignarUsuario,
+  culminarAsignacion,
+  actualizarAsignacion,
 };

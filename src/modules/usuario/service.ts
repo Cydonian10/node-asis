@@ -8,6 +8,7 @@ import { Usuario } from './dto/usuario.dto.js';
 import { SyncUsuario } from './dto/sync-usuario.dto.js';
 import { ActualizarUsuarioDto } from './dto/actualizar-usuario.dto.js';
 import { CrearSyncUsuarioDto } from './dto/crear-sync-usuario.dto.js';
+import { UsuarioHorarioAsignacion } from './dto/usuario-horario-asignacion.dto.js';
 
 const _getAllMigrados = (
   activo?: boolean,
@@ -41,10 +42,17 @@ const _createSyncUsuario = (
   return UsuarioRepo.createSyncUsuario(data);
 };
 
+const _getHorarios = (
+  usuarioId: number,
+): Promise<UsuarioHorarioAsignacion[]> => {
+  return UsuarioRepo.getHorarios(usuarioId);
+};
+
 export const UsuarioService = {
   getAllMigrados: _getAllMigrados,
   getById: _getById,
   getAllSync: _getAllSync,
   update: _update,
   createSyncUsuario: _createSyncUsuario,
+  getHorarios: _getHorarios,
 };

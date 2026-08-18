@@ -171,6 +171,38 @@ const UsuarioPath = {
    *         description: Error interno del servidor.
    */
   Update: '/:id',
+
+  /**
+   * @swagger
+   * /usuarios/{id}/horarios:
+   *   get:
+   *     tags:
+   *       - Usuarios
+   *     summary: Lista los horarios asignados a un usuario
+   *     description: Devuelve las asignaciones de horario del usuario con su estado calculado
+   *                  (activo, vencido o culminado).
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         description: Id del usuario (UsuarioId).
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Lista de asignaciones de horario del usuario.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/UsuarioHorarioAsignacion'
+   *       400:
+   *         description: Id no valido.
+   *       500:
+   *         description: Error interno del servidor.
+   */
+  GetHorarios: '/:id/horarios',
 };
 
 export default UsuarioPath;
