@@ -5,8 +5,9 @@ AUTOR: Gabriel
 OBJETIVO: Retornar el estado de "movimientos" de un horario para validar ediciones de estructura.
           Devuelve dos resultsets:
             - TurnosBloqueados: turnos del horario que ya tienen Asistencia, TurnoModificado o
-              estan ligados a una Licencia/Permiso/Justificacion via TurnoId (no pueden cambiar
-              sus horas, dia de salida ni eliminarse).
+           estan ligados a un Permiso o Justificacion via TurnoId (no pueden cambiar
+               sus horas, dia de salida ni eliminarse). Las licencias se validan por fechas
+               del usuario, no por turno.
             - EstadoMovimientos: flags de movimientos del horario (asistencias, turnos modificados,
               licencias, permisos, justificaciones, vacaciones de usuarios asignados) y el flag
               estructuraBloqueada (cualquier movimiento => no se pueden agregar dias/grupos).
@@ -39,7 +40,6 @@ BEGIN
             OR EXISTS (SELECT 1 FROM TurnoModificado TM WHERE TM.TurnoId = T.TurnoId AND TM.Eliminado = 0)
             OR EXISTS (SELECT 1 FROM Permisos P WHERE P.TurnoId = T.TurnoId)
             OR EXISTS (SELECT 1 FROM Justificaciones J WHERE J.TurnoId = T.TurnoId)
-            OR EXISTS (SELECT 1 FROM Licencia L WHERE L.TurnoId = T.TurnoId)
         );
 
     -- Estado global de movimientos del horario
@@ -86,4 +86,3 @@ BEGIN
 END
 GO
 
-EXEC usp_GetHorarioMovimientos 3

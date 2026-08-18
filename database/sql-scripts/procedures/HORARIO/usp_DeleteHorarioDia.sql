@@ -32,7 +32,7 @@ BEGIN
         END
 
         -- No permitir eliminar un dia que tenga turnos ligados a movimientos
-        -- (asistencia, turno modificado, licencia, permiso o justificacion).
+        -- (asistencia, turno modificado, permiso o justificacion).
         IF EXISTS (
             SELECT 1
             FROM Turno T
@@ -42,12 +42,11 @@ BEGIN
                     OR EXISTS (SELECT 1 FROM TurnoModificado TM WHERE TM.TurnoId = T.TurnoId AND TM.Eliminado = 0)
                     OR EXISTS (SELECT 1 FROM Permisos P WHERE P.TurnoId = T.TurnoId)
                     OR EXISTS (SELECT 1 FROM Justificaciones J WHERE J.TurnoId = T.TurnoId)
-                    OR EXISTS (SELECT 1 FROM Licencia L WHERE L.TurnoId = T.TurnoId)
                 )
         )
         BEGIN
             SET @State = -1;
-            SET @Message = 'El dia tiene turnos con asistencias o movimientos (licencia, permiso, justificacion) y no puede eliminarse';
+            SET @Message = 'El dia tiene turnos con asistencias o movimientos (permiso, justificacion) y no puede eliminarse';
             SET @CodeError = -1;
             RETURN;
         END

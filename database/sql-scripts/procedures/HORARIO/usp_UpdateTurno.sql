@@ -34,7 +34,7 @@ BEGIN
         END
 
         -- No permitir modificar un turno ligado a movimientos (asistencia, turno modificado,
-        -- licencia, permiso o justificacion) cuando la peticion implica un cambio real.
+        -- permiso o justificacion) cuando la peticion implica un cambio real.
         IF EXISTS (
             SELECT 1
             FROM Turno T
@@ -44,7 +44,6 @@ BEGIN
                     OR EXISTS (SELECT 1 FROM TurnoModificado TM WHERE TM.TurnoId = T.TurnoId AND TM.Eliminado = 0)
                     OR EXISTS (SELECT 1 FROM Permisos P WHERE P.TurnoId = T.TurnoId)
                     OR EXISTS (SELECT 1 FROM Justificaciones J WHERE J.TurnoId = T.TurnoId)
-                    OR EXISTS (SELECT 1 FROM Licencia L WHERE L.TurnoId = T.TurnoId)
                 )
                 AND (
                     (@HoraInicio IS NOT NULL AND @HoraInicio <> T.HoraInicio)
@@ -54,7 +53,7 @@ BEGIN
         )
         BEGIN
             SET @State = -1;
-            SET @Message = 'El turno tiene asistencias o movimientos (licencia, permiso, justificacion) y no puede modificarse';
+            SET @Message = 'El turno tiene asistencias o movimientos (permiso, justificacion) y no puede modificarse';
             SET @CodeError = -1;
             RETURN;
         END
