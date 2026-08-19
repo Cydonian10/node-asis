@@ -205,6 +205,10 @@ CREATE TABLE TurnoModificado
     FOREIGN KEY (TurnoId) REFERENCES Turno(TurnoId)
 );
 
+CREATE UNIQUE INDEX UX_TurnoModificado_Active_TurnoUsuarioFecha
+    ON TurnoModificado (TurnoId, UsuarioId, Fecha)
+    WHERE Eliminado = 0;
+
 CREATE TABLE SalidaTurnoDia
 (
     SalidaTurnoDiaId INT IDENTITY(1,1) PRIMARY KEY,
