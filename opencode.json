@@ -6,7 +6,7 @@
       "command": ["npx", "-y", "@bilims/mcp-sqlserver"],
       "enabled": true,
       "environment": {
-        "SQLSERVER_HOST": "localhost",
+        "SQLSERVER_HOST": "192.168.0.16",
         "SQLSERVER_PORT": "1438",
         "SQLSERVER_USER": "sa",
         "SQLSERVER_PASSWORD": "Desser2bdtest",

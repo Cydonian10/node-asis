@@ -236,9 +236,9 @@ CREATE TABLE EstadoAsistencia
 CREATE TABLE [Control]
 (
     ControlId INT IDENTITY(1,1) PRIMARY KEY,
-    Tolerancia INT DEFAULT 0,
-    LimiteFalta INT DEFAULT 0,
-    LimiteTardanza INT DEFAULT 0,
+    Tolerancia INT NOT NULL DEFAULT 0,
+    LimiteFalta INT NOT NULL DEFAULT 0,
+    LimiteTardanza INT NOT NULL DEFAULT 0,
     Eliminado BIT DEFAULT 0,
     CreatedBy INT NOT NULL,
     UpdatedBy INT NULL,
@@ -252,10 +252,10 @@ CREATE TABLE ControlUnidad
     ControlId INT NOT NULL,
     UnidadId INT NOT NULL,
     Eliminado BIT DEFAULT 0,
+    CreatedBy INT NOT NULL DEFAULT 0,
     UpdatedBy INT NULL,
     CreatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedAt DATETIME2 DEFAULT GETDATE(),
-    UNIQUE (ControlId, UnidadId),
     FOREIGN KEY (ControlId) REFERENCES [Control](ControlId),
     FOREIGN KEY (UnidadId) REFERENCES Unidad(UnidadId)
 );
@@ -270,7 +270,6 @@ CREATE TABLE ControlUsuario
     UpdatedBy INT NULL,
     CreatedAt DATETIME2 DEFAULT GETDATE(),
     UpdatedAt DATETIME2 DEFAULT GETDATE(),
-    UNIQUE (ControlId, UsuarioId),
     FOREIGN KEY (ControlId) REFERENCES [Control](ControlId),
     FOREIGN KEY (UsuarioId) REFERENCES Usuario(UsuarioId)
 );
@@ -288,6 +287,20 @@ CREATE TABLE ControlArea
     FOREIGN KEY (ControlId) REFERENCES [Control](ControlId),
     FOREIGN KEY (AreaId) REFERENCES Area(AreaId)
 );
+
+-- Solo se permite una asignacion activa de control por area, unidad y usuario.
+-- El indice unico filtrado permite reasignar otro control tras desasignar (Eliminado = 1).
+CREATE UNIQUE INDEX UX_ControlArea_Active_Area
+    ON ControlArea (AreaId)
+    WHERE Eliminado = 0;
+
+CREATE UNIQUE INDEX UX_ControlUnidad_Active_Unidad
+    ON ControlUnidad (UnidadId)
+    WHERE Eliminado = 0;
+
+CREATE UNIQUE INDEX UX_ControlUsuario_Active_Usuario
+    ON ControlUsuario (UsuarioId)
+    WHERE Eliminado = 0;
 
 CREATE TABLE Vacaciones
 (
