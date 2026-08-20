@@ -16,8 +16,13 @@ import { TurnoModificadoFilterDto } from './dto/turno-modificado-filter.dto.js';
 
 const toSqlDate = (value: string): Date => new Date(`${value}T00:00:00.000Z`);
 
-const toSqlTime = (value: string): string =>
-  value.length === 5 ? `${value}:00` : value;
+const toSqlTime = (value: string): Date => {
+  const [hours, minutes, seconds = '00'] = value.split(':');
+
+  return new Date(
+    Date.UTC(1970, 0, 1, Number(hours), Number(minutes), Number(seconds)),
+  );
+};
 
 const getAll = async (
   turnoId: number,

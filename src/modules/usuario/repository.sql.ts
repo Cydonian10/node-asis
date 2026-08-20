@@ -19,6 +19,17 @@ import {
   UsuarioHorarioAsignacion,
 } from './dto/usuario-horario-asignacion.dto.js';
 
+export type UsuarioTurnoModificado = {
+  turnoModificadoId: number;
+  turnoId: number;
+  usuarioId: number;
+  fecha: string;
+  horaInicio: string;
+  horaFin: string;
+  motivo: string | null;
+  horarioNombre: string;
+};
+
 const getAllMigrados = async (
   activo?: boolean,
   tipo?: string,
@@ -168,6 +179,33 @@ const getHorarios = async (
   }
 };
 
+const getTurnosModificados = async (
+  usuarioId: number,
+  filters: { fechaDesde?: string; fechaHasta?: string },
+): Promise<UsuarioTurnoModificado[]> => {
+  try {
+    const pool = await connectToDb();
+    const request = pool.request();
+    request.input('UsuarioId', sql.Int, usuarioId);
+    request.input(
+      'FechaDesde',
+      sql.Date,
+      filters.fechaDesde ? new Date(`${filters.fechaDesde}T00:00:00.000Z`) : null,
+    );
+    request.input(
+      'FechaHasta',
+      sql.Date,
+      filters.fechaHasta ? new Date(`${filters.fechaHasta}T00:00:00.000Z`) : null,
+    );
+    const result = await request.execute<UsuarioTurnoModificado>(
+      'usp_GetUsuarioTurnosModificados',
+    );
+    return result.recordset;
+  } catch (error) {
+    return ErrorUtil.select(error as string) as UsuarioTurnoModificado[];
+  }
+};
+
 export default {
   getAllMigrados,
   getById,
@@ -175,4 +213,5 @@ export default {
   update,
   createSyncUsuario,
   getHorarios,
+  getTurnosModificados,
 };

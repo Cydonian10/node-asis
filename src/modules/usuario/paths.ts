@@ -203,6 +203,28 @@ const UsuarioPath = {
    *         description: Error interno del servidor.
    */
   GetHorarios: '/:id/horarios',
+
+  /**
+   * @swagger
+   * /usuarios/{id}/turnos-modificados:
+   *   get:
+   *     tags: [Usuarios]
+   *     summary: Lista las modificaciones de los turnos de un usuario
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema: { type: integer }
+   *       - in: query
+   *         name: fechaDesde
+   *         schema: { type: string, format: date }
+   *       - in: query
+   *         name: fechaHasta
+   *         schema: { type: string, format: date }
+   *     responses:
+   *       200: { description: Modificaciones del usuario. }
+   */
+  GetTurnosModificados: '/:id/turnos-modificados',
 };
 
 export default UsuarioPath;

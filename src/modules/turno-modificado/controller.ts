@@ -34,8 +34,8 @@ const parseQuery = (req: Request) => {
 
 const getAll = async (req: Request, res: Response) => {
   const turnoId = parsePositiveId(req.params.turnoId, 'turnoId', res);
+  console.log({ turnoId });
   if (turnoId === null) return;
-
   const parsed = TurnoModificadoFilterSchema.safeParse(parseQuery(req));
   if (!parsed.success) {
     return res.status(HttpStatusCodes.BAD_REQUEST).json({

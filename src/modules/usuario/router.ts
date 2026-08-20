@@ -10,6 +10,7 @@ router.get(UsuarioPath.GetAllSync, Controller.getAllSync);
 router.post(UsuarioPath.CreateSync, Controller.createSyncUsuario);
 router.get(UsuarioPath.GetById, Controller.getById);
 router.get(UsuarioPath.GetHorarios, Controller.getHorarios);
+router.get(UsuarioPath.GetTurnosModificados, Controller.getTurnosModificados);
 router.patch(UsuarioPath.Update, Controller.update);
 
 export default router;

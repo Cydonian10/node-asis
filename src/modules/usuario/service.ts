@@ -9,6 +9,8 @@ import { SyncUsuario } from './dto/sync-usuario.dto.js';
 import { ActualizarUsuarioDto } from './dto/actualizar-usuario.dto.js';
 import { CrearSyncUsuarioDto } from './dto/crear-sync-usuario.dto.js';
 import { UsuarioHorarioAsignacion } from './dto/usuario-horario-asignacion.dto.js';
+import type { UsuarioTurnoModificado } from './repository.sql.js';
+import { LuxonAdapter } from '@src/common/plugins/luxon.js';
 
 const _getAllMigrados = (
   activo?: boolean,
@@ -48,6 +50,19 @@ const _getHorarios = (
   return UsuarioRepo.getHorarios(usuarioId);
 };
 
+const _getTurnosModificados = async (
+  usuarioId: number,
+  filters: { fechaDesde?: string; fechaHasta?: string },
+): Promise<UsuarioTurnoModificado[]> => {
+  const resp = await UsuarioRepo.getTurnosModificados(usuarioId, filters);
+
+  return resp.map((value) => ({
+    ...value,
+    horaFin: LuxonAdapter.fromSqlServerTime(value.horaFin),
+    horaInicio: LuxonAdapter.fromSqlServerTime(value.horaInicio),
+  }));
+};
+
 export const UsuarioService = {
   getAllMigrados: _getAllMigrados,
   getById: _getById,
@@ -55,4 +70,5 @@ export const UsuarioService = {
   update: _update,
   createSyncUsuario: _createSyncUsuario,
   getHorarios: _getHorarios,
+  getTurnosModificados: _getTurnosModificados,
 };

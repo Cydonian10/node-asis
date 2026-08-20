@@ -4,6 +4,7 @@ import { UsuarioService } from './service.js';
 import { formatZodError } from '@src/util/zod-util.js';
 import { ActualizarUsuarioSchema } from './validations/actualizar-usuario.validation.js';
 import { CrearSyncUsuarioSchema } from './validations/crear-sync-usuario.validation.js';
+import { TurnoModificadoFilterSchema } from '../turno-modificado/validations/turno-modificado-filter.validation.js';
 
 const getAllMigrados = async (req: Request, res: Response) => {
   const activo =
@@ -72,6 +73,30 @@ const getHorarios = async (req: Request, res: Response) => {
   return res.status(HttpStatusCodes.OK).json(items);
 };
 
+const getTurnosModificados = async (req: Request, res: Response) => {
+  const id = +req.params.id;
+  if (!id) {
+    return res
+      .status(HttpStatusCodes.BAD_REQUEST)
+      .json({ message: 'El id debe ser un número válido' });
+  }
+  const parsed = TurnoModificadoFilterSchema.safeParse({
+    fechaDesde: req.query.fechaDesde,
+    fechaHasta: req.query.fechaHasta,
+  });
+  if (!parsed.success) {
+    return res.status(HttpStatusCodes.BAD_REQUEST).json({
+      message: 'Filtros inválidos',
+      errors: formatZodError(parsed.error),
+    });
+  }
+  const items = await UsuarioService.getTurnosModificados(id, {
+    fechaDesde: parsed.data.fechaDesde,
+    fechaHasta: parsed.data.fechaHasta,
+  });
+  return res.status(HttpStatusCodes.OK).json(items);
+};
+
 const update = async (req: Request, res: Response) => {
   const id = +req.params.id;
   if (!id) {
@@ -99,4 +124,5 @@ export default {
   createSyncUsuario,
   update,
   getHorarios,
+  getTurnosModificados,
 };

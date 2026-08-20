@@ -1,5 +1,5 @@
 const TurnoModificadoPath = {
-  Base: '/turno/:turnoId/modificar',
+  Base: '/turno',
 
   /**
    * @swagger
@@ -25,7 +25,7 @@ const TurnoModificadoPath = {
    *       200: { description: Lista de modificaciones activas. }
    *       400: { description: Filtros inválidos. }
    */
-  GetAll: '/',
+  GetAll: '/:turnoId/modificar',
 
   /**
    * @swagger
@@ -47,7 +47,7 @@ const TurnoModificadoPath = {
    *       201: { description: Modificación creada correctamente. }
    *       400: { description: Datos inválidos o modificación duplicada. }
    */
-  Create: '/',
+  Create: '/:turnoId/modificar',
 
   /**
    * @swagger
@@ -68,7 +68,7 @@ const TurnoModificadoPath = {
    *       200: { description: Modificación encontrada. }
    *       404: { description: Modificación inexistente o perteneciente a otro turno. }
    */
-  GetOne: '/:turnoModificadoId',
+  GetOne: '/:turnoId/modificar/:turnoModificadoId',
 
   /**
    * @swagger
@@ -94,7 +94,7 @@ const TurnoModificadoPath = {
    *       200: { description: Modificación actualizada correctamente. }
    *       400: { description: Datos inválidos, pertenencia incorrecta o asistencia existente. }
    */
-  Update: '/:turnoModificadoId',
+  Update: '/:turnoId/modificar/:turnoModificadoId',
 
   /**
    * @swagger
@@ -115,7 +115,7 @@ const TurnoModificadoPath = {
    *       200: { description: Modificación eliminada correctamente. }
    *       400: { description: Pertenencia incorrecta o asistencia existente. }
    */
-  Delete: '/:turnoModificadoId',
+  Delete: '/:turnoId/modificar/:turnoModificadoId',
 };
 
 export default TurnoModificadoPath;
