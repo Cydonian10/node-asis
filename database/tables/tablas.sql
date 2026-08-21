@@ -353,6 +353,10 @@ CREATE TABLE Motivo
     UpdatedAt DATETIME2 DEFAULT GETDATE()
 );
 
+CREATE UNIQUE INDEX UX_Motivo_Active_Nombre
+    ON Motivo (Nombre)
+    WHERE Eliminado = 0;
+
 
 -- falta crear tabla de vacaciones por usuario y detalle de vacaciones por usuario
 CREATE TABLE Permisos

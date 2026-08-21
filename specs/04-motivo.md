@@ -1,6 +1,6 @@
 # SPEC 04 — Módulo Motivo con CRUD de catálogo
 
-> **Status:** Draft
+> **Status:** Aprobado
 > **Depends on:** Ninguno
 > **Date:** 2026-08-21
 > **Objective:** Crear el módulo `motivo` para administrar el catálogo de motivos mediante un CRUD con validaciones estrictas, unicidad activa por nombre y eliminación lógica.
@@ -100,24 +100,24 @@ Reglas del modelo:
 
 ## Acceptance criteria
 
-- [ ] `GET /motivos` devuelve todos los motivos no eliminados.
-- [ ] `GET /motivos/:id` devuelve un motivo activo existente.
-- [ ] `GET /motivos/:id` rechaza un identificador inexistente o eliminado usando las convenciones de error del proyecto.
-- [ ] `POST /motivos` exige un `nombre` de 1 a 100 caracteres después de aplicar trim.
-- [ ] `POST /motivos` acepta `descripcion` opcional de hasta 255 caracteres.
-- [ ] `POST /motivos` acepta `documentoRequerido` opcional y lo guarda como `false` cuando se omite.
-- [ ] `POST /motivos` rechaza nombres duplicados entre motivos activos.
-- [ ] `PUT /motivos/:id` actualiza parcialmente `nombre`, `descripcion` y `documentoRequerido`.
-- [ ] `PUT /motivos/:id` rechaza un body vacío.
-- [ ] `PUT /motivos/:id` aplica las mismas reglas de longitud, trim y unicidad del alta.
-- [ ] `DELETE /motivos/:id` marca el motivo como eliminado lógicamente.
-- [ ] Un motivo eliminado deja de aparecer en `GET /motivos` y no puede obtenerse por `GET /motivos/:id`.
-- [ ] Eliminar lógicamente un motivo referenciado por `Permisos`, `Justificaciones` o `Licencia` no rompe sus referencias históricas.
-- [ ] Después de eliminar lógicamente un motivo, otro motivo activo puede reutilizar su nombre.
-- [ ] Las rutas y schemas tienen documentación `@swagger` válida.
-- [ ] Los procedimientos se invocan desde `repository.sql.ts` mediante `request.execute(...)`.
-- [ ] Las pruebas unitarias cubren las validaciones y reglas del servicio indicadas.
-- [ ] `npm run build` pasa sin errores.
+- [x] `GET /motivos` devuelve todos los motivos no eliminados.
+- [x] `GET /motivos/:id` devuelve un motivo activo existente.
+- [x] `GET /motivos/:id` rechaza un identificador inexistente o eliminado usando las convenciones de error del proyecto.
+- [x] `POST /motivos` exige un `nombre` de 1 a 100 caracteres después de aplicar trim.
+- [x] `POST /motivos` acepta `descripcion` opcional de hasta 255 caracteres.
+- [x] `POST /motivos` acepta `documentoRequerido` opcional y lo guarda como `false` cuando se omite.
+- [x] `POST /motivos` rechaza nombres duplicados entre motivos activos.
+- [x] `PUT /motivos/:id` actualiza parcialmente `nombre`, `descripcion` y `documentoRequerido`.
+- [x] `PUT /motivos/:id` rechaza un body vacío.
+- [x] `PUT /motivos/:id` aplica las mismas reglas de longitud, trim y unicidad del alta.
+- [x] `DELETE /motivos/:id` marca el motivo como eliminado lógicamente.
+- [x] Un motivo eliminado deja de aparecer en `GET /motivos` y no puede obtenerse por `GET /motivos/:id`.
+- [x] Eliminar lógicamente un motivo referenciado por `Permisos`, `Justificaciones` o `Licencia` no rompe sus referencias históricas.
+- [x] Después de eliminar lógicamente un motivo, otro motivo activo puede reutilizar su nombre.
+- [x] Las rutas y schemas tienen documentación `@swagger` válida.
+- [x] Los procedimientos se invocan desde `repository.sql.ts` mediante `request.execute(...)`.
+- [x] Las pruebas unitarias cubren las validaciones y reglas del servicio indicadas.
+- [x] `npm run build` pasa sin errores.
 
 ---
 
@@ -143,12 +143,12 @@ Reglas del modelo:
 
 ## Risks
 
-| Risk | Mitigation |
-| --- | --- |
-| Dos solicitudes concurrentes crean el mismo nombre activo. | Mantener el índice único filtrado y convertir el error de constraint en una respuesta controlada. |
-| Un nombre con espacios puede eludir validaciones o generar inconsistencias. | Aplicar trim antes de validar y persistir. |
-| Un motivo eliminado podría seguir siendo usado por registros históricos. | Usar eliminación lógica y conservar las claves foráneas existentes. |
-| Un PUT vacío puede ocultar un error del cliente. | Rechazar objetos sin campos actualizables mediante un schema Zod estricto. |
+| Risk                                                                        | Mitigation                                                                                        |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Dos solicitudes concurrentes crean el mismo nombre activo.                  | Mantener el índice único filtrado y convertir el error de constraint en una respuesta controlada. |
+| Un nombre con espacios puede eludir validaciones o generar inconsistencias. | Aplicar trim antes de validar y persistir.                                                        |
+| Un motivo eliminado podría seguir siendo usado por registros históricos.    | Usar eliminación lógica y conservar las claves foráneas existentes.                               |
+| Un PUT vacío puede ocultar un error del cliente.                            | Rechazar objetos sin campos actualizables mediante un schema Zod estricto.                        |
 
 ---
 
