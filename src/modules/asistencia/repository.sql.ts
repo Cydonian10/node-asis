@@ -1,5 +1,9 @@
 import sql from 'mssql';
-import { executeCreate, runTransaction } from '@src/util/sqlServerUtil.js';
+import {
+  executeCreate,
+  requireCreatedId,
+  runTransaction,
+} from '@src/util/sqlServerUtil.js';
 import { ErrorUtil } from '@src/util/handleOperationResult.js';
 import { ProcesarAsistenciaDto } from './dto/procesar-asistencia.dto.js';
 import { ProcesarAsistenciaResultado } from './dto/procesar-asistencia-resultado.dto.js';
@@ -64,6 +68,8 @@ type ReprocesarAsistenciaRow = {
   turnoEntrada: string | Date | null;
   turnoId: number | null;
   turnoSalida: string | Date | null;
+  extendido: boolean;
+  salidaDiaId: number | null;
   minutosTarde: number;
   tolerancia: number | null;
   limiteTardanza: number | null;
@@ -93,6 +99,15 @@ type ReprocesarFaltaRow = {
 type EstadoRow = {
   EstadoAsistenciaId: number;
   Nombre: string;
+};
+
+type AsistenciaByTurnoRow = {
+  asistenciaId: number;
+  estadoEntradaId: number | null;
+  estadoSalidaId: number | null;
+  resultadoAsistencia: string | null;
+  horaEntrada: Date | null;
+  horaSalida: Date | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -283,13 +298,57 @@ async function getAsistenciaByTurno(
   request.input('UsuarioId', sql.Int, usuarioId);
   request.input('Fecha', sql.Date, new Date(`${fecha}T00:00:00`));
   request.input('TurnoId', sql.Int, turnoId);
-  const result = await request.query<{ AsistenciaId: number }>(
-    'SELECT AsistenciaId FROM Asistencia WHERE UsuarioId = @UsuarioId AND Fecha = @Fecha AND turnoId = @TurnoId',
+  const result = await request.query<{ asistenciaId: number }>(
+    `SELECT AsistenciaId AS asistenciaId
+     FROM Asistencia
+     WHERE UsuarioId = @UsuarioId AND Fecha = @Fecha AND turnoId = @TurnoId`,
   );
-  return result.recordset[0]?.AsistenciaId ?? null;
+  return result.recordset[0]?.asistenciaId ?? null;
 }
 
-/** Actualiza la entrada de una asistencia existente (no hay SP dedicado). */
+async function getAsistenciaDetalleByTurno(
+  tx: sql.Transaction,
+  usuarioId: number,
+  fecha: string,
+  turnoId: number,
+): Promise<AsistenciaByTurnoRow | null> {
+  const request = new sql.Request(tx);
+  request.input('UsuarioId', sql.Int, usuarioId);
+  request.input('Fecha', sql.Date, new Date(`${fecha}T00:00:00`));
+  request.input('TurnoId', sql.Int, turnoId);
+  const result = await request.query<AsistenciaByTurnoRow>(
+    `SELECT AsistenciaId AS asistenciaId,
+            EstadoAsistenciaEntradaId AS estadoEntradaId,
+            EstadoAsistenciaSalidaId AS estadoSalidaId,
+            ResultadoAsistencia AS resultadoAsistencia,
+            HoraEntrada AS horaEntrada,
+            HoraSalida AS horaSalida
+     FROM Asistencia
+     WHERE UsuarioId = @UsuarioId AND Fecha = @Fecha AND turnoId = @TurnoId`,
+  );
+  return result.recordset[0] ?? null;
+}
+
+async function updateEntrada(
+  tx: sql.Transaction,
+  asistenciaId: number,
+  horaEntrada: Date | null,
+  estadoEntradaId: number,
+  minutosTarde: number,
+  resultado: string,
+  userId: number,
+): Promise<void> {
+  await executeCreate(tx, 'usp_UpdateAsistenciaEntrada', (req) => {
+    req.input('AsistenciaId', sql.Int, asistenciaId);
+    req.input('HoraEntrada', sql.DateTime2, horaEntrada);
+    req.input('EstadoEntradaId', sql.Int, estadoEntradaId);
+    req.input('MinutosTarde', sql.Int, minutosTarde);
+    req.input('ResultadoAsistencia', sql.VarChar(50), resultado);
+    req.input('USER', sql.Int, userId);
+  });
+}
+
+/** Compatibilidad temporal para el reprocesador anterior hasta su reemplazo. */
 async function updateEntradaRaw(
   tx: sql.Transaction,
   asistenciaId: number,
@@ -298,20 +357,15 @@ async function updateEntradaRaw(
   resultado: string,
   userId: number,
 ): Promise<void> {
-  const request = new sql.Request(tx);
-  request.input('AsistenciaId', sql.Int, asistenciaId);
-  request.input('HoraEntrada', sql.DateTime2, horaEntrada);
-  request.input('EstadoEntradaId', sql.Int, estadoEntradaId);
-  request.input('Resultado', sql.VarChar(50), resultado);
-  request.input('USER', sql.Int, userId);
-  await request.query(
-    `UPDATE Asistencia
-     SET HoraEntrada = @HoraEntrada,
-         EstadoAsistenciaEntradaId = @EstadoEntradaId,
-         ResultadoAsistencia = @Resultado,
-         UpdatedAt = GETDATE(),
-         UpdatedBy = @USER
-     WHERE AsistenciaId = @AsistenciaId`,
+  if (!horaEntrada || !estadoEntradaId) return;
+  await updateEntrada(
+    tx,
+    asistenciaId,
+    horaEntrada,
+    estadoEntradaId,
+    0,
+    resultado,
+    userId,
   );
 }
 
@@ -347,12 +401,12 @@ export function classificarEntrada(
   marca: Date,
   entradaTarget: Date,
   tolerancia: number,
-  limiteFalta: number,
+  limiteTardanza: number,
 ): number | null {
   const diff = diffMinutes(marca, entradaTarget);
   if (diff <= tolerancia) return estados.get('Asistio') ?? null;
-  if (diff <= limiteFalta) return estados.get('Tarde') ?? null;
-  return null;
+  if (diff <= limiteTardanza) return estados.get('Tarde') ?? null;
+  return estados.get('Falta') ?? null;
 }
 
 export function classificarSalida(
@@ -422,7 +476,7 @@ export function targetFechas(
   return { entradaIso, salidaIso };
 }
 
-const procesarMarcaciones = async (
+export const procesarMarcacionesLegacy = async (
   data: ProcesarAsistenciaDto,
   userId: number,
 ): Promise<ProcesarAsistenciaResultado> => {
@@ -819,6 +873,307 @@ const procesarMarcaciones = async (
 };
 
 // ---------------------------------------------------------------------------
+// procesar-marcaciones v2: lote atomico por marcacion
+// ---------------------------------------------------------------------------
+
+const ESTADOS_ESPECIALES = new Set([
+  'Vacaciones',
+  'Licencia',
+  'Permiso',
+  'Justificado',
+]);
+
+async function crearAsistenciaNormal(
+  tx: sql.Transaction,
+  usuarioId: number,
+  fecha: string,
+  turno: TurnoVigenteRow,
+  controlId: number | null,
+  userId: number,
+): Promise<number> {
+  const output = await executeCreate(tx, 'usp_CreateAsistencia', (req) => {
+    req.input('UsuarioId', sql.Int, usuarioId);
+    req.input('Fecha', sql.Date, new Date(`${fecha}T00:00:00`));
+    req.input('TurnoId', sql.Int, turno.turnoId);
+    req.input('HoraEntrada', sql.DateTime2, null);
+    req.input('EstadoEntradaId', sql.Int, null);
+    req.input('EstadoSalidaId', sql.Int, null);
+    req.input('ResultadoAsistencia', sql.VarChar(50), null);
+    req.input('ControlId', sql.Int, controlId);
+    req.input(
+      'vigenciaInicio',
+      sql.Date,
+      turno.fechaInicio
+        ? new Date(`${dateValue(turno.fechaInicio)}T00:00:00`)
+        : null,
+    );
+    req.input(
+      'vigenciaFin',
+      sql.Date,
+      turno.fechaFin ? new Date(`${dateValue(turno.fechaFin)}T00:00:00`) : null,
+    );
+    req.input('turnoEntrada', sql.Time, normalizeSqlTime(turno.horaInicio));
+    req.input('turnoSalida', sql.Time, normalizeSqlTime(turno.horaFin));
+    req.input('MinutosTarde', sql.Int, 0);
+    req.input('USER', sql.Int, userId);
+    req.output('Id', sql.Int);
+  });
+  return requireCreatedId(output, 'usp_CreateAsistencia');
+}
+
+async function crearAsistenciaGuard(
+  tx: sql.Transaction,
+  usuarioId: number,
+  fecha: string,
+  turno: TurnoVigenteRow,
+  guard: string,
+  userId: number,
+): Promise<number> {
+  const output = await executeCreate(tx, 'usp_CreateAsistenciaGuard', (req) => {
+    req.input('UsuarioId', sql.Int, usuarioId);
+    req.input('Fecha', sql.Date, new Date(`${fecha}T00:00:00`));
+    req.input('TurnoId', sql.Int, turno.turnoId);
+    req.input('GuardNombre', sql.VarChar(50), guard);
+    req.input('turnoEntrada', sql.Time, normalizeSqlTime(turno.horaInicio));
+    req.input('turnoSalida', sql.Time, normalizeSqlTime(turno.horaFin));
+    req.input('USER', sql.Int, userId);
+    req.output('Id', sql.Int);
+  });
+  return requireCreatedId(output, 'usp_CreateAsistenciaGuard');
+}
+
+async function enlazarMarcacion(
+  tx: sql.Transaction,
+  asistenciaId: number,
+  marcacionId: number,
+  biometricoId: number,
+  tipoMarcacion: 'entrada' | 'salida',
+  userId: number,
+): Promise<void> {
+  await executeCreate(tx, 'usp_CreateAsistenciaMarcacion', (req) => {
+    req.input('AsistenciaId', sql.Int, asistenciaId);
+    req.input('MarcacionId', sql.Int, marcacionId);
+    req.input('BiometricoId', sql.Int, biometricoId);
+    req.input('TipoMarcacion', sql.VarChar(50), tipoMarcacion);
+    req.input('USER', sql.Int, userId);
+  });
+}
+
+async function actualizarSalida(
+  tx: sql.Transaction,
+  asistenciaId: number,
+  horaSalida: Date | null,
+  estadoSalidaId: number,
+  resultado: string,
+  userId: number,
+): Promise<void> {
+  await executeCreate(tx, 'usp_UpdateAsistenciaSalida', (req) => {
+    req.input('AsistenciaId', sql.Int, asistenciaId);
+    req.input('HoraSalida', sql.DateTime2, horaSalida);
+    req.input('EstadoSalidaId', sql.Int, estadoSalidaId);
+    req.input('ResultadoAsistencia', sql.VarChar(50), resultado);
+    req.input('USER', sql.Int, userId);
+  });
+}
+
+const procesarMarcacionesV2 = async (
+  data: ProcesarAsistenciaDto,
+  userId: number,
+): Promise<ProcesarAsistenciaResultado> => {
+  return runTransaction(async (tx) => {
+    const estados = await getEstados(tx);
+    const pendientes = await getMarcacionesPendientes(tx, data.usuarioId, data.fecha);
+    const pendienteId = estados.get('Pendiente');
+    if (!pendienteId) throw new Error('El estado Pendiente no existe');
+
+    const resultado: ProcesarAsistenciaResultado = {
+      procesadas: pendientes.length,
+      creadas: 0,
+      actualizadas: 0,
+      ignoradas: 0,
+      errores: [],
+      detalle: [],
+    };
+
+    for (const marcacion of pendientes) {
+      if (!marcacion.terminalId || !marcacion.biometricoId) {
+        throw new Error(`Marcacion ${marcacion.marcacionId}: terminal/biometrico no valido`);
+      }
+
+      const usuario = await getUsuarioByDni(tx, marcacion.empCode);
+      if (!usuario) {
+        throw new Error(`Marcacion ${marcacion.marcacionId}: usuario no encontrado por DNI`);
+      }
+
+      const fechaMarca = isoDate(marcacion.punchTime);
+      const turno = await getTurnoVigente(
+        tx,
+        usuario.usuarioId,
+        fechaMarca,
+        timeOf(marcacion.punchTime),
+      );
+      if (!turno) {
+        throw new Error(`Marcacion ${marcacion.marcacionId}: horario o turno vigente no encontrado`);
+      }
+
+      const { entradaIso, salidaIso } = targetFechas(turno, fechaMarca);
+      const entradaTarget = atDateTime(entradaIso, turno.horaInicio);
+      const salidaTarget = atDateTime(salidaIso, turno.horaFin);
+      const tipoMarcacion: 'entrada' | 'salida' =
+        Math.abs(diffMinutes(marcacion.punchTime, entradaTarget)) <=
+        Math.abs(diffMinutes(marcacion.punchTime, salidaTarget))
+          ? 'entrada'
+          : 'salida';
+      const control = await getControlAplicable(
+        tx,
+        usuario.usuarioId,
+        turno.areaId,
+        turno.unidadId,
+      );
+
+      let asistencia = await getAsistenciaDetalleByTurno(
+        tx,
+        usuario.usuarioId,
+        entradaIso,
+        turno.turnoId,
+      );
+      const guard = await getGuardActivo(tx, usuario.usuarioId, entradaIso);
+      if (!asistencia) {
+        const asistenciaId = guard
+          ? await crearAsistenciaGuard(
+              tx,
+              usuario.usuarioId,
+              entradaIso,
+              turno,
+              guard.tipoGuard,
+              userId,
+            )
+          : await crearAsistenciaNormal(
+              tx,
+              usuario.usuarioId,
+              entradaIso,
+              turno,
+              control?.controlId ?? null,
+              userId,
+            );
+        asistencia = {
+          asistenciaId,
+          estadoEntradaId: guard ? estados.get(guard.tipoGuard) ?? null : pendienteId,
+          estadoSalidaId: guard ? estados.get(guard.tipoGuard) ?? null : pendienteId,
+          resultadoAsistencia: guard?.tipoGuard ?? 'Pendiente',
+          horaEntrada: null,
+          horaSalida: null,
+        };
+        resultado.creadas++;
+      } else {
+        resultado.actualizadas++;
+      }
+
+      const nombreEntrada = nombreEstado(estados, asistencia.estadoEntradaId);
+      const nombreSalida = nombreEstado(estados, asistencia.estadoSalidaId);
+      const esEspecial =
+        ESTADOS_ESPECIALES.has(nombreEntrada ?? '') ||
+        ESTADOS_ESPECIALES.has(nombreSalida ?? '');
+
+      if (esEspecial) {
+        await updateGuardHorasRaw(
+          tx,
+          asistencia.asistenciaId,
+          tipoMarcacion === 'entrada' ? marcacion.punchTime : null,
+          tipoMarcacion === 'salida' ? marcacion.punchTime : null,
+          userId,
+        );
+      } else if (tipoMarcacion === 'entrada') {
+        const reemplaza =
+          !asistencia.horaEntrada ||
+          Math.abs(diffMinutes(marcacion.punchTime, entradaTarget)) <
+            Math.abs(diffMinutes(asistencia.horaEntrada, entradaTarget));
+        if (reemplaza) {
+          const estadoEntradaId = classificarEntrada(
+            estados,
+            marcacion.punchTime,
+            entradaTarget,
+            control?.tolerancia ?? 0,
+            control?.limiteTardanza ?? 0,
+          );
+          if (!estadoEntradaId) throw new Error('No se pudo resolver el estado de entrada');
+          const minutosDesdeEntrada = Math.max(
+            0,
+            Math.floor(diffMinutes(marcacion.punchTime, entradaTarget)),
+          );
+          const minutosTarde =
+            minutosDesdeEntrada > (control?.tolerancia ?? 0)
+              ? minutosDesdeEntrada
+              : 0;
+          await updateEntrada(
+            tx,
+            asistencia.asistenciaId,
+            marcacion.punchTime,
+            estadoEntradaId,
+            minutosTarde,
+            combinarResultado(
+              nombreEstado(estados, estadoEntradaId),
+              nombreSalida ?? 'Pendiente',
+            ),
+            userId,
+          );
+          asistencia.estadoEntradaId = estadoEntradaId;
+          asistencia.horaEntrada = marcacion.punchTime;
+        }
+      } else {
+        const reemplaza =
+          !asistencia.horaSalida ||
+          Math.abs(diffMinutes(marcacion.punchTime, salidaTarget)) <
+            Math.abs(diffMinutes(asistencia.horaSalida, salidaTarget));
+        if (reemplaza) {
+          const estadoSalidaId = classificarSalida(estados, marcacion.punchTime, salidaTarget);
+          if (!estadoSalidaId) throw new Error('No se pudo resolver el estado de salida');
+          await actualizarSalida(
+            tx,
+            asistencia.asistenciaId,
+            marcacion.punchTime,
+            estadoSalidaId,
+            combinarResultado(
+              nombreEntrada ?? 'Pendiente',
+              nombreEstado(estados, estadoSalidaId),
+            ),
+            userId,
+          );
+          asistencia.estadoSalidaId = estadoSalidaId;
+          asistencia.horaSalida = marcacion.punchTime;
+        }
+      }
+
+      await enlazarMarcacion(
+        tx,
+        asistencia.asistenciaId,
+        marcacion.marcacionId,
+        marcacion.biometricoId,
+        tipoMarcacion,
+        userId,
+      );
+      resultado.detalle.push({
+        marcacionId: marcacion.marcacionId,
+        asistenciaId: asistencia.asistenciaId,
+        usuarioId: usuario.usuarioId,
+        fecha: entradaIso,
+        tipoMarcacion,
+        estadoEntrada: nombreEstado(estados, asistencia.estadoEntradaId),
+        estadoSalida: nombreEstado(estados, asistencia.estadoSalidaId),
+        resultado: esEspecial
+          ? asistencia.resultadoAsistencia
+          : combinarResultado(
+              nombreEstado(estados, asistencia.estadoEntradaId),
+              nombreEstado(estados, asistencia.estadoSalidaId),
+            ),
+      });
+    }
+
+    return resultado;
+  });
+};
+
+// ---------------------------------------------------------------------------
 // reprocesar-asistencias
 // ---------------------------------------------------------------------------
 
@@ -898,21 +1253,25 @@ const reprocesarAsistencias = async (
       ]);
 
       for (const { row, marcas } of porAsistencia.values()) {
-        const nombreResultado = nombreEstado(estados, row.estadoEntradaId);
-        if (nombreResultado && NOMBRES_GUARD.has(nombreResultado)) {
-          resultado.ignoradas++;
-          continue;
-        }
-        if (!row.turnoEntrada || !row.turnoSalida || !row.turnoId) {
-          resultado.ignoradas++;
-          continue;
-        }
+        try {
+          const nombreResultado = nombreEstado(estados, row.estadoEntradaId);
+          if (nombreResultado && NOMBRES_GUARD.has(nombreResultado)) {
+            resultado.ignoradas++;
+            continue;
+          }
+          if (!row.turnoEntrada || !row.turnoSalida || !row.turnoId) {
+            resultado.ignoradas++;
+            continue;
+          }
 
-        const entradaTarget = atDateTime(
-          dateValue(row.fecha),
-          row.turnoEntrada,
-        );
-        const salidaTarget = atDateTime(dateValue(row.fecha), row.turnoSalida);
+          const fechaEntrada = dateValue(row.fecha);
+          const entradaTarget = atDateTime(fechaEntrada, row.turnoEntrada);
+          const salidaTarget = atDateTime(
+            row.extendido && row.salidaDiaId
+              ? nextWeekdayIso(fechaEntrada, row.salidaDiaId)
+              : fechaEntrada,
+            row.turnoSalida,
+          );
 
         let mejorEntrada: Date | null = null;
         let mejorSalida: Date | null = null;
@@ -934,15 +1293,15 @@ const reprocesarAsistencias = async (
           }
         }
 
-        const tolerancia = 0;
-        const limiteFalta = 0;
+        const tolerancia = row.tolerancia ?? 0;
+        const limiteTardanza = row.limiteTardanza ?? 0;
         const entradaId = mejorEntrada
           ? classificarEntrada(
               estados,
               mejorEntrada,
               entradaTarget,
               tolerancia,
-              limiteFalta,
+              limiteTardanza,
             )
           : null;
         const salidaId = mejorSalida
@@ -950,33 +1309,37 @@ const reprocesarAsistencias = async (
           : null;
 
         const entradaIdFinal =
-          entradaId ??
-          (mejorSalida ? (estados.get('SinMarcacionEntrada') ?? null) : null);
+          entradaId ?? (estados.get('SinMarcacionEntrada') ?? null);
         const salidaIdFinal =
-          salidaId ??
-          (mejorEntrada ? (estados.get('SinMarcacionSalida') ?? null) : null);
+          salidaId ?? (estados.get('SinMarcacionSalida') ?? null);
         const resultadoStr = combinarResultado(
           nombreEstado(estados, entradaIdFinal),
           nombreEstado(estados, salidaIdFinal),
         );
 
-        await updateEntradaRaw(
+        const minutosDesdeEntrada = mejorEntrada
+          ? Math.max(0, Math.floor(diffMinutes(mejorEntrada, entradaTarget)))
+          : 0;
+        if (!entradaIdFinal || !salidaIdFinal) {
+          throw new Error('No se pudieron resolver los estados de cierre');
+        }
+        await updateEntrada(
           tx,
           row.asistenciaId,
           mejorEntrada,
           entradaIdFinal,
+          minutosDesdeEntrada > tolerancia ? minutosDesdeEntrada : 0,
           resultadoStr,
           userId,
         );
-        if (mejorSalida) {
-          await executeCreate(tx, 'usp_UpdateAsistenciaSalida', (req) => {
-            req.input('AsistenciaId', sql.Int, row.asistenciaId);
-            req.input('HoraSalida', sql.DateTime2, mejorSalida);
-            req.input('EstadoSalidaId', sql.Int, salidaIdFinal);
-            req.input('ResultadoAsistencia', sql.VarChar(50), resultadoStr);
-            req.input('USER', sql.Int, userId);
-          });
-        }
+        await actualizarSalida(
+          tx,
+          row.asistenciaId,
+          mejorSalida,
+          salidaIdFinal,
+          resultadoStr,
+          userId,
+        );
         resultado.actualizadas++;
         resultado.detalle.push({
           marcacionId: 0,
@@ -988,14 +1351,24 @@ const reprocesarAsistencias = async (
           estadoSalida: nombreEstado(estados, salidaIdFinal),
           resultado: resultadoStr,
         });
+        } catch (error) {
+          resultado.errores.push({
+            marcacionId: 0,
+            motivo: error instanceof Error ? error.message : String(error),
+          });
+        }
       }
 
       // Crear Falta (o guard) para turnos vigentes sin asistencia ya finalizados
       for (const falta of faltas) {
-        const fechaFalta = dateValue(falta.fecha);
-        const guard = await getGuardActivo(tx, falta.usuarioId, fechaFalta);
-        const nombreGuard = guard?.tipoGuard ?? 'Falta';
-        const output = await executeCreate(
+        try {
+          if (falta.feriadoAplicable) {
+            resultado.ignoradas++;
+            continue;
+          }
+          const fechaFalta = dateValue(falta.fecha);
+          const nombreGuard = falta.tipoGuard ?? 'Falta';
+          const output = await executeCreate(
           tx,
           'usp_CreateAsistenciaGuard',
           (req) => {
@@ -1013,8 +1386,8 @@ const reprocesarAsistencias = async (
             req.output('Id', sql.Int);
           },
         );
-        resultado.creadas++;
-        resultado.detalle.push({
+          resultado.creadas++;
+          resultado.detalle.push({
           marcacionId: 0,
           asistenciaId: output.Id ?? null,
           usuarioId: falta.usuarioId,
@@ -1022,8 +1395,14 @@ const reprocesarAsistencias = async (
           tipoMarcacion: 'entrada',
           estadoEntrada: nombreGuard,
           estadoSalida: nombreGuard,
-          resultado: nombreGuard,
-        });
+            resultado: nombreGuard,
+          });
+        } catch (error) {
+          resultado.errores.push({
+            marcacionId: 0,
+            motivo: error instanceof Error ? error.message : String(error),
+          });
+        }
       }
 
       return resultado;
@@ -1034,6 +1413,6 @@ const reprocesarAsistencias = async (
 };
 
 export default {
-  procesarMarcaciones,
+  procesarMarcaciones: procesarMarcacionesV2,
   reprocesarAsistencias,
 };

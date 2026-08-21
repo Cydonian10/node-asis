@@ -4,7 +4,7 @@ OBJETIVO: Actualizar la entrada, su estado, los minutos de tardanza y el resulta
 ======================================================================================================*/
 CREATE OR ALTER PROCEDURE [dbo].[usp_UpdateAsistenciaEntrada]
     @AsistenciaId INT,
-    @HoraEntrada DATETIME2,
+    @HoraEntrada DATETIME2 = NULL,
     @EstadoEntradaId INT,
     @MinutosTarde INT,
     @ResultadoAsistencia VARCHAR(50),
@@ -26,7 +26,7 @@ BEGIN
         END
 
         UPDATE Asistencia
-        SET HoraEntrada = @HoraEntrada,
+        SET HoraEntrada = ISNULL(@HoraEntrada, HoraEntrada),
             EstadoAsistenciaEntradaId = @EstadoEntradaId,
             MinutosTarde = @MinutosTarde,
             ResultadoAsistencia = @ResultadoAsistencia,

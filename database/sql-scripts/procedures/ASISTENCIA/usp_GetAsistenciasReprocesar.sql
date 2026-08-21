@@ -34,6 +34,8 @@ BEGIN
         A.turnoEntrada AS turnoEntrada,
         A.turnoId AS turnoId,
         A.turnoSalida AS turnoSalida,
+        T.Extendido AS extendido,
+        STD.DiaId AS salidaDiaId,
         C.Tolerancia AS tolerancia,
         C.LimiteTardanza AS limiteTardanza,
         AM.AsistenciaMarcacionId AS asistenciaMarcacionId,
@@ -41,6 +43,8 @@ BEGIN
         AM.TipoMarcacion AS tipoMarcacion,
         M.PunchTime AS punchTime
     FROM Asistencia A
+    LEFT JOIN Turno T ON T.TurnoId = A.turnoId
+    LEFT JOIN SalidaTurnoDia STD ON STD.TurnoId = T.TurnoId AND STD.Eliminado = 0
     LEFT JOIN [Control] C ON C.ControlId = A.ControlId AND C.Eliminado = 0
     LEFT JOIN AsistenciaMarcacion AM ON AM.AsistenciaId = A.AsistenciaId
     LEFT JOIN Marcacion M ON M.MarcacionId = AM.MarcacionId

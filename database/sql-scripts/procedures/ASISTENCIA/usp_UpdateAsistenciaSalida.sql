@@ -12,7 +12,7 @@ NRO  FECHA       USUARIO    MODIFICACION
 CREATE OR ALTER PROCEDURE [dbo].[usp_UpdateAsistenciaSalida]
     -- Parametros de entrada
     @AsistenciaId INT,
-    @HoraSalida DATETIME2,
+    @HoraSalida DATETIME2 = NULL,
     @EstadoSalidaId INT = NULL,
     @ResultadoAsistencia VARCHAR(50) = NULL,
     @USER INT,
@@ -65,7 +65,7 @@ BEGIN
         END
 
         UPDATE Asistencia
-        SET HoraSalida = @HoraSalida,
+        SET HoraSalida = ISNULL(@HoraSalida, HoraSalida),
             EstadoAsistenciaSalidaId = @EstadoSalidaId,
             ResultadoAsistencia = @ResultadoAsistencia,
             UpdatedAt = GETDATE(),

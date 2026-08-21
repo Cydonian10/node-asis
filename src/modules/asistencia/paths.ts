@@ -8,10 +8,9 @@ const AsistenciaPath = {
    *     tags:
    *       - Asistencias
    *     summary: Procesa marcaciones nuevas
-   *     description: Procesa las Marcacion aun no enlazadas en AsistenciaMarcacion. Resuelve el
-   *                  usuario por DNI, su control, el turno vigente mas cercano, evalúa guards
-   *                  (Vacaciones/Licencia/Permisos/Justificaciones) y crea o actualiza la asistencia
-   *                  etiquetando cada marca como entrada o salida.
+     *     description: Procesa atomícamente las Marcacion aun no enlazadas en AsistenciaMarcacion.
+     *                  Valida terminal y biometrico, resuelve usuario, control y turno vigente, y crea
+     *                  o actualiza la asistencia con estados Pendiente, entrada o salida.
    *     requestBody:
    *       required: true
    *       content:
@@ -39,8 +38,8 @@ const AsistenciaPath = {
    *     tags:
    *       - Asistencias
    *     summary: Re-evalua asistencias existentes
-   *     description: Recalcula estados y ResultadoAsistencia de las AsistenciaMarcacion existentes y
-   *                  crea asistencias Falta (o guard) para turnos vigentes finalizados sin marca.
+     *     description: Recalcula estados y ResultadoAsistencia, cierra pendientes y crea faltas o
+     *                  guards para turnos finalizados. Los errores individuales no detienen el lote.
    *     requestBody:
    *       required: true
    *       content:

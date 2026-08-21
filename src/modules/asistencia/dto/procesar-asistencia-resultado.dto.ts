@@ -4,7 +4,7 @@
  *  schemas:
  *    ProcesarAsistenciaResultado:
  *      type: object
- *      description: Resumen del procesamiento de marcaciones.
+ *      description: Resumen del procesamiento o cierre de marcaciones.
  *      properties:
  *        procesadas:
  *          type: integer
@@ -17,7 +17,7 @@
  *          description: Asistencias actualizadas (salida registrada o guard).
  *        ignoradas:
  *          type: integer
- *          description: Marcaciones ignoradas (turno no vigente, guard cubre, etc.).
+ *          description: Marcaciones o cierres omitidos por guard, feriado u otra regla aplicable.
  *        errores:
  *          type: array
  *          items:
@@ -54,6 +54,9 @@
  *              resultado:
  *                type: string
  *                nullable: true
+ *              minutosTarde:
+ *                type: integer
+ *                nullable: true
  */
 export type ProcesarAsistenciaResultado = {
   procesadas: number;
@@ -70,5 +73,6 @@ export type ProcesarAsistenciaResultado = {
     estadoEntrada: string | null;
     estadoSalida: string | null;
     resultado: string | null;
+    minutosTarde?: number;
   }[];
 };
