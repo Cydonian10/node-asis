@@ -43,13 +43,22 @@ BEGIN
             RETURN;
         END
 
-        IF EXISTS (
-            SELECT 1 FROM AsistenciaMarcacion
-            WHERE AsistenciaId = @AsistenciaId AND MarcacionId = @MarcacionId
-        )
+        IF EXISTS (SELECT 1 FROM AsistenciaMarcacion WHERE MarcacionId = @MarcacionId)
         BEGIN
             SET @State = -1;
-            SET @Message = 'La marcacion ya esta enlazada a la asistencia';
+            SET @Message = 'La marcacion ya esta enlazada a una asistencia';
+            SET @CodeError = -1;
+            RETURN;
+        END
+
+        IF @BiometricoId IS NOT NULL
+           AND NOT EXISTS (
+               SELECT 1 FROM Biometrico
+               WHERE BiometricoId = @BiometricoId AND Eliminado = 0
+           )
+        BEGIN
+            SET @State = -1;
+            SET @Message = 'El biometrico no existe';
             SET @CodeError = -1;
             RETURN;
         END

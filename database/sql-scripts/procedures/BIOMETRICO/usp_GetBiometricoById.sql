@@ -16,6 +16,7 @@ BEGIN
 
     SELECT
         B.BiometricoId AS biometricoId,
+        B.TerminalId AS terminalId,
         B.MarcaBiometricoId AS marcaBiometricoId,
         M.Nombre AS marcaNombre,
         B.Nombre AS nombre,

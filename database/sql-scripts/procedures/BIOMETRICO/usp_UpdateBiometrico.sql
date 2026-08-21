@@ -10,6 +10,7 @@ NRO  FECHA       USUARIO    MODIFICACION
 ======================================================================================================*/
 CREATE OR ALTER PROCEDURE [dbo].[usp_UpdateBiometrico]
     @ID INT,
+    @TerminalId INT,
     @MarcaBiometricoId INT,
     @Nombre VARCHAR(40),
     @Ip VARCHAR(20),
@@ -49,7 +50,8 @@ BEGIN
         END
 
         UPDATE Biometrico
-        SET MarcaBiometricoId = @MarcaBiometricoId,
+        SET TerminalId = @TerminalId,
+            MarcaBiometricoId = @MarcaBiometricoId,
             Nombre = @Nombre,
             Ip = @Ip,
             Serie = @Serie,

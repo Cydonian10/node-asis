@@ -9,6 +9,7 @@ NRO  FECHA       USUARIO    MODIFICACION
   -     -            -            -
 ======================================================================================================*/
 CREATE OR ALTER PROCEDURE [dbo].[usp_CreateBiometrico]
+    @TerminalId INT,
     @MarcaBiometricoId INT,
     @Nombre VARCHAR(40),
     @Ip VARCHAR(20),
@@ -42,12 +43,12 @@ BEGIN
 
         INSERT INTO Biometrico
         (
-            MarcaBiometricoId, Nombre, Ip, Serie, Ubicacion,
+            TerminalId, MarcaBiometricoId, Nombre, Ip, Serie, Ubicacion,
             Tarjeta, Huella, Rostro, CreatedBy, UpdatedBy
         )
         VALUES
         (
-            @MarcaBiometricoId, @Nombre, @Ip, @Serie, @Ubicacion,
+            @TerminalId, @MarcaBiometricoId, @Nombre, @Ip, @Serie, @Ubicacion,
             @Tarjeta, @Huella, @Rostro, @USER, @USER
         );
 

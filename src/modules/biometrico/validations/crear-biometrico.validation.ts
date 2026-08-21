@@ -6,9 +6,10 @@ import { z } from 'zod';
  *   schemas:
  *     CrearBiometricoDto:
  *       type: object
- *       required: [marcaBiometricoId, nombre, ip, serie, ubicacion, tarjeta, huella, rostro]
+ *       required: [terminalId, marcaBiometricoId, nombre, ip, serie, ubicacion, tarjeta, huella, rostro]
  *       properties:
  *         marcaBiometricoId: { type: integer, example: 1 }
+ *         terminalId: { type: integer, example: 1 }
  *         nombre: { type: string, maxLength: 40, example: Control acceso principal }
  *         ip: { type: string, maxLength: 20, example: 192.168.1.100 }
  *         serie: { type: string, maxLength: 20, example: ZK123456 }
@@ -19,6 +20,7 @@ import { z } from 'zod';
  */
 export const CrearBiometricoSchema = z
   .object({
+    terminalId: z.number().int().positive(),
     marcaBiometricoId: z.number().int().positive(),
     nombre: z.string().trim().min(1).max(40),
     ip: z.string().trim().min(1).max(20),

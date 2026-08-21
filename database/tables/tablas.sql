@@ -431,6 +431,7 @@ CREATE TABLE Asistencia
     turnoEntrada TIME, -- snapshot
     turnoId INT, -- snapshot
     turnoSalida TIME, -- snapshot
+    MinutosTarde INT NOT NULL DEFAULT 0,
     FOREIGN KEY (UsuarioId) REFERENCES Usuario(UsuarioId),
     FOREIGN KEY (EstadoAsistenciaEntradaId) REFERENCES EstadoAsistencia(EstadoAsistenciaId),
     FOREIGN KEY (EstadoAsistenciaSalidaId) REFERENCES EstadoAsistencia(EstadoAsistenciaId),
@@ -460,6 +461,7 @@ CREATE TABLE MarcaBiometrico
 CREATE TABLE Biometrico
 (
     BiometricoId INT IDENTITY(1,1) PRIMARY KEY,
+    TerminalId INT NOT NULL,
     MarcaBiometricoId INT NOT NULL,
     Nombre VARCHAR(40) NOT NULL,
     Ip VARCHAR(20) NOT NULL,
@@ -477,6 +479,13 @@ CREATE TABLE Biometrico
 );
 
 
+
+CREATE UNIQUE INDEX UX_Asistencia_UsuarioFechaTurno
+    ON Asistencia (UsuarioId, Fecha, turnoId);
+
+CREATE UNIQUE INDEX UX_Biometrico_Active_TerminalId
+    ON Biometrico (TerminalId)
+    WHERE Eliminado = 0;
 
 CREATE TABLE Cita
 (
@@ -562,6 +571,9 @@ CREATE TABLE AsistenciaMarcacion
     UpdatedAt DATETIME2 DEFAULT GETDATE()
 );
 
+CREATE UNIQUE INDEX UX_AsistenciaMarcacion_Marcacion
+    ON AsistenciaMarcacion (MarcacionId);
+
 -- Seed del catalogo Dia (7 dias) para instalaciones nuevas. Idempotente.
 IF NOT EXISTS (SELECT 1 FROM Dia)
 BEGIN
@@ -586,6 +598,7 @@ BEGIN
         ('Falta', 0, 0),
         ('Tarde', 0, 0),
         ('SalidaAnticipada', 0, 0),
+        ('Pendiente', 0, 0),
         ('SinMarcacionEntrada', 0, 0),
         ('SinMarcacionSalida', 0, 0),
         ('Justificado', 0, 0),

@@ -4,9 +4,10 @@
  *   schemas:
  *     Biometrico:
  *       type: object
- *       required: [biometricoId, marcaBiometricoId, nombre, ip, serie, ubicacion, tarjeta, huella, rostro]
+ *       required: [biometricoId, terminalId, marcaBiometricoId, nombre, ip, serie, ubicacion, tarjeta, huella, rostro]
  *       properties:
  *         biometricoId: { type: integer, example: 1 }
+ *         terminalId: { type: integer, example: 1 }
  *         marcaBiometricoId: { type: integer, example: 1 }
  *         marcaNombre: { type: string, example: ZKTeco }
  *         nombre: { type: string, example: Control acceso principal }
@@ -19,6 +20,7 @@
  */
 export type Biometrico = {
   biometricoId: number;
+  terminalId: number;
   marcaBiometricoId: number;
   marcaNombre: string;
   nombre: string;

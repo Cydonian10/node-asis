@@ -24,6 +24,7 @@ CREATE OR ALTER PROCEDURE [dbo].[usp_CreateAsistencia]
     @vigenciaFin DATE = NULL,
     @turnoEntrada TIME = NULL,
     @turnoSalida TIME = NULL,
+    @MinutosTarde INT = 0,
     @USER INT,
 
     -- Salidas
@@ -38,6 +39,22 @@ BEGIN
     BEGIN TRY
         DECLARE @NombreEntrada VARCHAR(50);
         DECLARE @NombreSalida VARCHAR(50);
+        DECLARE @PendienteId INT;
+
+        SELECT @PendienteId = EstadoAsistenciaId
+        FROM EstadoAsistencia
+        WHERE Nombre = 'Pendiente' AND Eliminado = 0;
+
+        IF @PendienteId IS NULL
+        BEGIN
+            SET @State = -1;
+            SET @Message = 'El estado Pendiente no existe';
+            SET @CodeError = -1;
+            RETURN;
+        END
+
+        SET @EstadoEntradaId = ISNULL(@EstadoEntradaId, @PendienteId);
+        SET @EstadoSalidaId = ISNULL(@EstadoSalidaId, @PendienteId);
 
         SELECT @NombreEntrada = Nombre FROM EstadoAsistencia WHERE EstadoAsistenciaId = @EstadoEntradaId;
         SELECT @NombreSalida = Nombre FROM EstadoAsistencia WHERE EstadoAsistenciaId = @EstadoSalidaId;
@@ -64,13 +81,13 @@ BEGIN
         INSERT INTO Asistencia (
             UsuarioId, Fecha, EstadoAsistenciaEntradaId, EstadoAsistenciaSalidaId,
             ResultadoAsistencia, ControlId, HoraEntrada, HoraSalida,
-            vigenciaInicio, vigenciaFin, turnoEntrada, turnoId, turnoSalida,
+            vigenciaInicio, vigenciaFin, turnoEntrada, turnoId, turnoSalida, MinutosTarde,
             CreatedBy, UpdatedBy
         )
         VALUES (
             @UsuarioId, @Fecha, @EstadoEntradaId, @EstadoSalidaId,
             @ResultadoAsistencia, @ControlId, @HoraEntrada, NULL,
-            @vigenciaInicio, @vigenciaFin, @turnoEntrada, @TurnoId, @turnoSalida,
+            @vigenciaInicio, @vigenciaFin, @turnoEntrada, @TurnoId, @turnoSalida, @MinutosTarde,
             @USER, @USER
         );
 

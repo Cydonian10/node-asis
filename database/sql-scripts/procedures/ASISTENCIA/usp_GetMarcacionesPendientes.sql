@@ -21,6 +21,7 @@ BEGIN
         M.MarcacionId AS marcacionId,
         M.EmpCode AS empCode,
         M.PunchTime AS punchTime,
+        M.TerminalId AS terminalId,
         U.UsuarioId AS usuarioId
     FROM Marcacion M
     LEFT JOIN SyncUsuarios S ON S.Dni = M.EmpCode

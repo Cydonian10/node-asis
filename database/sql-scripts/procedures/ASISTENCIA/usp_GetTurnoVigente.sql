@@ -31,8 +31,8 @@ BEGIN
         HD.HorarioDiaId AS horarioDiaId,
         H.AreaId AS areaId,
         A.UnidadId AS unidadId,
-        T.HoraInicio AS horaInicio,
-        T.HoraFin AS horaFin,
+        COALESCE(TM.HoraInicio, T.HoraInicio) AS horaInicio,
+        COALESCE(TM.HoraFin, T.HoraFin) AS horaFin,
         T.Extendido AS extendido,
         HD.DiaId AS diaIdEntrada,
         STD.DiaId AS salidaDiaId,
@@ -41,7 +41,10 @@ BEGIN
         VG.FechaFin AS fechaFin,
         CASE WHEN HD.DiaId = @DiaSemana THEN 1 ELSE 0 END AS esEntradaMatch,
         ABS(DATEDIFF(MINUTE,
-            CASE WHEN HD.DiaId = @DiaSemana THEN T.HoraInicio ELSE T.HoraFin END,
+            CASE
+                WHEN HD.DiaId = @DiaSemana THEN COALESCE(TM.HoraInicio, T.HoraInicio)
+                ELSE COALESCE(TM.HoraFin, T.HoraFin)
+            END,
             @Hora)) AS distancia
     FROM HorarioAsignacion HA
     INNER JOIN Horario H ON H.HorarioId = HA.HorarioId AND H.Eliminado = 0
@@ -51,8 +54,20 @@ BEGIN
     LEFT JOIN SalidaTurnoDia STD ON STD.TurnoId = T.TurnoId AND STD.Eliminado = 0
     LEFT JOIN VigenciaGrupo VG ON VG.VigenciaGrupoId = HD.VigenciaGrupoId AND VG.Eliminado = 0
         AND VG.FechaInicio <= @Fecha AND (VG.FechaFin IS NULL OR VG.FechaFin >= @Fecha)
+    OUTER APPLY (
+        SELECT TOP 1 TM.HoraInicio, TM.HoraFin
+        FROM TurnoModificado TM
+        WHERE TM.TurnoId = T.TurnoId
+          AND TM.UsuarioId = HA.UsuarioId
+          AND TM.Fecha = CASE
+              WHEN HD.DiaId = @DiaSemana THEN @Fecha
+              ELSE DATEADD(DAY, -((@DiaSemana - HD.DiaId + 7) % 7), @Fecha)
+          END
+          AND TM.Eliminado = 0
+    ) TM
     WHERE HA.UsuarioId = @UsuarioId
         AND HA.Eliminado = 0
+        AND HA.Culminacion = 0
         AND HA.FechaInicio <= @Fecha
         AND (HA.FechaFin IS NULL OR HA.FechaFin >= @Fecha)
         AND (

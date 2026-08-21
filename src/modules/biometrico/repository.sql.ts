@@ -43,6 +43,7 @@ const create = async (
   try {
     const pool = await connectToDb();
     const request = pool.request();
+    request.input('TerminalId', sql.Int, data.terminalId);
     request.input('MarcaBiometricoId', sql.Int, data.marcaBiometricoId);
     request.input('Nombre', sql.VarChar(40), data.nombre);
     request.input('Ip', sql.VarChar(20), data.ip);
@@ -72,6 +73,7 @@ const update = async (
     const pool = await connectToDb();
     const request = pool.request();
     request.input('ID', sql.Int, id);
+    request.input('TerminalId', sql.Int, data.terminalId);
     request.input('MarcaBiometricoId', sql.Int, data.marcaBiometricoId);
     request.input('Nombre', sql.VarChar(40), data.nombre);
     request.input('Ip', sql.VarChar(20), data.ip);
