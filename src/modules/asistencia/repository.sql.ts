@@ -44,6 +44,8 @@ type MarcacionPendienteRow = {
   marcacionId: number;
   empCode: string;
   punchTime: Date;
+  terminalId: number | null;
+  biometricoId: number | null;
   usuarioId: number | null;
 };
 
@@ -62,6 +64,9 @@ type ReprocesarAsistenciaRow = {
   turnoEntrada: string | Date | null;
   turnoId: number | null;
   turnoSalida: string | Date | null;
+  minutosTarde: number;
+  tolerancia: number | null;
+  limiteTardanza: number | null;
   asistenciaMarcacionId: number | null;
   marcacionId: number | null;
   tipoMarcacion: string | null;
@@ -78,6 +83,11 @@ type ReprocesarFaltaRow = {
   extendido: boolean;
   diaIdEntrada: number;
   salidaDiaId: number | null;
+  controlId: number | null;
+  tolerancia: number | null;
+  limiteTardanza: number | null;
+  tipoGuard: string | null;
+  feriadoAplicable: boolean;
 };
 
 type EstadoRow = {

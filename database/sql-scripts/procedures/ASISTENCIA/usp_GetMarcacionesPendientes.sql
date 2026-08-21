@@ -22,8 +22,10 @@ BEGIN
         M.EmpCode AS empCode,
         M.PunchTime AS punchTime,
         M.TerminalId AS terminalId,
+        B.BiometricoId AS biometricoId,
         U.UsuarioId AS usuarioId
     FROM Marcacion M
+    LEFT JOIN Biometrico B ON B.TerminalId = M.TerminalId AND B.Eliminado = 0
     LEFT JOIN SyncUsuarios S ON S.Dni = M.EmpCode
     LEFT JOIN Usuario U ON U.SyncUsuarioId = S.SyncUsuarioId AND U.Eliminado = 0 AND U.Active = 1
     WHERE M.Eliminado = 0
